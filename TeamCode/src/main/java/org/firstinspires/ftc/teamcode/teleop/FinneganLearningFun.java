@@ -10,7 +10,6 @@ import org.firstinspires.ftc.robotcore.internal.collections.EvictingBlockingQueu
 public class FinneganLearningFun extends OpMode {
     @Override
     public void init(){
-        telemetry.addData("Hello", "World");
     }
     @Override
     public void loop(){
