@@ -14,6 +14,6 @@ public class FinneganLearningFun extends OpMode {
     }
     @Override
     public void loop(){
-        EvictingBlockingQueue<Gamepad.RumbleEffect> hi = gamepad1.rumbleQueue;
+        gamepad1.rumble(20);
     }
 }
