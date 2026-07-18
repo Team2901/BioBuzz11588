@@ -14,5 +14,8 @@ public class FinneganLearningFun extends OpMode {
         telemetry.addData("Left Stick X: ", gamepad1.left_stick_x);
         telemetry.addData("Left Stick Y: ", gamepad1.left_stick_y);
         telemetry.addData("A: ", gamepad1.a);
+        telemetry.addData("B: ", gamepad1.b);
+        telemetry.addData("Y: ", gamepad1.y);
+        telemetry.addData("X: ", gamepad1.x);
     }
 }
