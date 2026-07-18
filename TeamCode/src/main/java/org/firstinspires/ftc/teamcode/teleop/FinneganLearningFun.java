@@ -14,6 +14,8 @@ public class FinneganLearningFun extends OpMode {
     }
     @Override
     public void loop(){
-        gamepad1.rumble(20);
+        if(gamepad1.a) {
+            gamepad1.rumble(20);
+        }
     }
 }
