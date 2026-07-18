@@ -20,6 +20,7 @@ public class Hardware {
     public DcMotorEx backLeft;
     public DcMotorEx frontRight;
     public DcMotorEx backRight;
+    public DcMotorEx intake;
     //RevHub orientation necessary for an usage of IMU
     RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection;
     RevHubOrientationOnRobot.LogoFacingDirection logoDirection;
@@ -74,20 +75,30 @@ public class Hardware {
             telemetry.addLine("Can't find backRight: making a mock");
         }
 
+        try{
+            intake = hardwareMap.get(DcMotorEx.class, "intake");
+        }catch(IllegalArgumentException e){
+            intake = new MockDcMotor();
+            telemetry.addLine("Can't find intake: making a mock");
+        }
+
         frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         frontLeft.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         backLeft.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         backRight.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        intake.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         /* This may not be necessary, but exists so that when using coachbot the wheels go
         * in the correct direction. The reveres wheels may need to change as the drive base
         * changes.
@@ -105,6 +116,7 @@ public class Hardware {
         frontRight.setPower(0);
         backLeft.setPower(0);
         backRight.setPower(0);
+        intake.setPower(0);
 
         /*Sets orientation: If something like field oriented driving or anything IMU
         * dependent isn't working check if this matches positions on the robot IRL */

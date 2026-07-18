@@ -4,6 +4,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
@@ -17,7 +18,7 @@ import java.util.Arrays;
 public class QualTeleop extends OpMode {
     Hardware robot = new Hardware();
     private Limelight3A limelight3A;
-
+    boolean reversed = false;
     double turningPower;
 
     //telemetry
@@ -67,6 +68,17 @@ public class QualTeleop extends OpMode {
         if (gamepad1.left_bumper) {
             robot.imu.resetYaw();
         }
+
+        // Saw some stuff that said it would be good to have an eject function
+        if (gamepad1.bWasPressed()){
+            if (reversed){
+                robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
+            } else {
+                robot.intake.setDirection(DcMotorSimple.Direction.REVERSE);
+            }
+            reversed = !reversed;
+        }
+
         //update the wheels' velocities
         robot.frontLeft.setVelocity(x - y + turningPower);
         robot.frontRight.setVelocity(x + y - turningPower);
