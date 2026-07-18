@@ -2,6 +2,9 @@ package org.firstinspires.ftc.teamcode.teleop;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
+
+import org.firstinspires.ftc.robotcore.internal.collections.EvictingBlockingQueue;
 
 @TeleOp()
 public class FinneganLearningFun extends OpMode {
@@ -11,6 +14,6 @@ public class FinneganLearningFun extends OpMode {
     }
     @Override
     public void loop(){
-        telemetry.addData("RUMBLE: ", gamepad1.rumbleQueue);
+        EvictingBlockingQueue<Gamepad.RumbleEffect> hi = gamepad1.rumbleQueue;
     }
 }
