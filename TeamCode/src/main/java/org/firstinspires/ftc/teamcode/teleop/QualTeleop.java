@@ -73,6 +73,7 @@ public class QualTeleop extends OpMode {
         robot.backLeft.setVelocity(x + y + turningPower);
         robot.backRight.setVelocity(x - y - turningPower);
         LLResult llResult = limelight3A!=null? limelight3A.getLatestResult():null;
+
         //telemetry
         if (llResult != null && llResult.isValid()){
             Pose3D botPose = llResult.getBotpose_MT2();
