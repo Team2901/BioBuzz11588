@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.outreach.utilities;
 
 import android.util.Log;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -13,7 +12,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-@Config
 @SuppressWarnings("unused")
 public class ImprovedGamepad {
     private static String Tag = "ImprovedGamepad";
