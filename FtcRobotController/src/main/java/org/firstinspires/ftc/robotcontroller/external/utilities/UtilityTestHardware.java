@@ -28,6 +28,7 @@ package org.firstinspires.ftc.robotcontroller.external.utilities;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Utility;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.AnalogSensor;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -127,6 +128,8 @@ public class UtilityTestHardware extends OpMode {
                 testWebcam((WebcamName) hardwareDevice);
             } else if (hardwareDevice instanceof AnalogSensor) {
                 testAnalogSensor((AnalogSensor) hardwareDevice);
+            } else if (hardwareDevice instanceof AnalogInput) {
+                testAnalogInput((AnalogInput) hardwareDevice);
             } else if (hardwareDevice instanceof DigitalChannel) {
                 testDigitalChannel((DigitalChannel) hardwareDevice);
             } else {
@@ -196,6 +199,10 @@ public class UtilityTestHardware extends OpMode {
 
     void testAnalogSensor(AnalogSensor analogSensor) {
         telemetry.addData("Voltage", analogSensor.readRawVoltage());
+    }
+    void testAnalogInput(AnalogInput analogInput) {
+        telemetry.addData("Voltage", analogInput.getVoltage());
+        telemetry.addData("Max Voltage", analogInput.getMaxVoltage());
     }
     void testDigitalChannel(DigitalChannel digitalChannel) {
         telemetry.addData("State", digitalChannel.getState());
