@@ -62,7 +62,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 @Autonomous(name="Robot: Auto Drive By Encoder", group="Robot")
-//@Disabled
+@Disabled
 public class RobotAutoDriveByEncoder_Linear extends LinearOpMode {
 
     /* Declare OpMode members. */
@@ -89,8 +89,8 @@ public class RobotAutoDriveByEncoder_Linear extends LinearOpMode {
     public void runOpMode() {
 
         // Initialize the drive system variables.
-        leftDrive  = hardwareMap.get(DcMotor.class, "backLeft");
-        rightDrive = hardwareMap.get(DcMotor.class, "backRight");
+        leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
+        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // When run, this OpMode should start both motors driving forward. So adjust these two lines based on your first test drive.
@@ -116,17 +116,9 @@ public class RobotAutoDriveByEncoder_Linear extends LinearOpMode {
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
         encoderDrive(DRIVE_SPEED,  48,  48, 5.0);  // S1: Forward 47 Inches with 5 Sec timeout
-        //encoderDrive(TURN_SPEED,   12, -12, 4.0);  // S2: Turn Right 12 Inches with 4 Sec timeout
-        //encoderDrive(DRIVE_SPEED, -24, -24, 4.0);  // S3: Reverse 24 Inches with 4 Sec timeout
+        encoderDrive(TURN_SPEED,   12, -12, 4.0);  // S2: Turn Right 12 Inches with 4 Sec timeout
+        encoderDrive(DRIVE_SPEED, -24, -24, 4.0);  // S3: Reverse 24 Inches with 4 Sec timeout
 
-        while (opModeIsActive()) {
-            telemetry.addData("Busy?",  " %s : %s", leftDrive.isBusy(),  rightDrive.isBusy());
-            telemetry.addData("Running to",  " %7d :%7d", leftDrive.getTargetPosition(),  rightDrive.getTargetPosition());
-            telemetry.addData("Currently at",  " at %7d :%7d",
-                    leftDrive.getCurrentPosition(), rightDrive.getCurrentPosition());
-            telemetry.update();
-            idle();
-        }
         telemetry.addData("Path", "Complete");
         telemetry.update();
         sleep(1000);  // pause to display final telemetry message.
@@ -171,6 +163,7 @@ public class RobotAutoDriveByEncoder_Linear extends LinearOpMode {
             // However, if you require that BOTH motors have finished their moves before the robot continues
             // onto the next step, use (isBusy() || isBusy()) in the loop test.
             while (opModeIsActive() &&
+                   (runtime.seconds() < timeoutS) &&
                    (leftDrive.isBusy() && rightDrive.isBusy())) {
 
                 // Display it for the driver.
@@ -179,7 +172,7 @@ public class RobotAutoDriveByEncoder_Linear extends LinearOpMode {
                                             leftDrive.getCurrentPosition(), rightDrive.getCurrentPosition());
                 telemetry.update();
             }
-/*
+
             // Stop all motion;
             leftDrive.setPower(0);
             rightDrive.setPower(0);
@@ -189,8 +182,6 @@ public class RobotAutoDriveByEncoder_Linear extends LinearOpMode {
             rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
             sleep(250);   // optional pause after each move.
-
- */
         }
     }
 }
