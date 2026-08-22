@@ -20,6 +20,7 @@ public class QualTeleop extends OpMode {
     private Limelight3A limelight3A;
     boolean reversed = false;
     double turningPower;
+    double intakePower = 0;
 
     //telemetry
     public void help() {
@@ -29,6 +30,8 @@ public class QualTeleop extends OpMode {
         telemetry.addLine("Gamepad 1");
         telemetry.addData("Left Joy", "Move drive base");
         telemetry.addData("Right Joy (X only)", "Turn drive base");
+        telemetry.addData("A", "intake toggle");
+        telemetry.addData("B", "switch direction");
     }
 
     @Override
@@ -65,6 +68,10 @@ public class QualTeleop extends OpMode {
         if(gamepad1.right_stick_x != 0){
             turningPower = .75 * gamepad1.right_stick_x * robot.speed ;
         }
+        else {
+            turningPower = 0;
+        }
+
         if (gamepad1.left_bumper) {
             robot.imu.resetYaw();
         }
@@ -78,6 +85,16 @@ public class QualTeleop extends OpMode {
             }
             reversed = !reversed;
         }
+        robot.intake.setPower(intakePower);
+        if (gamepad1.aWasPressed()) {
+            if (intakePower == 1){
+                intakePower = 0;
+            } else {
+                intakePower = 1;
+            }
+        }
+        if (gamepad1.xWasPressed())
+            limelight3A.start();
 
         //update the wheels' velocities
         robot.frontLeft.setVelocity(x - y + turningPower);

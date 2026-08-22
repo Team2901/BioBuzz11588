@@ -2,12 +2,14 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-//import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.PanelsTelemetry;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -21,6 +23,7 @@ public class Hardware {
     public DcMotorEx frontRight;
     public DcMotorEx backRight;
     public DcMotorEx intake;
+    Limelight3A limelight3A;
     //RevHub orientation necessary for an usage of IMU
     RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection;
     RevHubOrientationOnRobot.LogoFacingDirection logoDirection;
@@ -49,6 +52,10 @@ public class Hardware {
     }
     public void init(HardwareMap hardwareMap, Telemetry _telemetry){
         telemetry = _telemetry;
+
+        limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
+        limelight3A.pipelineSwitch(0);
+        limelight3A.start();
         //initializes necessary motors
         try{
             frontLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
