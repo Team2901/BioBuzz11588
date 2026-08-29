@@ -9,6 +9,15 @@
  * AARs - the com.qualcomm.* symbols here resolve only to the stub source.  (Those FTC
  * artifacts are Android AARs anyway, which a plain-Java module cannot consume.)
  *
+ * Limelight (com.qualcomm.hardware.limelightvision) and Panels (com.bylazar.*) are
+ * ALSO stubbed under src/ - the simulator has no camera and no web dashboard, so those
+ * stubs accept every call and report "nothing detected" / forward telemetry to the
+ * simulator's own window. OpModes using them compile and run; they just never see a
+ * target.
+ *
+ * PedroPathing is NOT stubbed: the simulator pulls the same artifacts the robot does,
+ * so paths really are followed here. See the dependencies block below.
+ *
  * It compiles the SAME OpMode files that the Android :TeamCode module compiles.
  * We do NOT add ../TeamCode/src/main/java directly as a source root: IntelliJ /
  * Android Studio require every source root to belong to exactly one module, so
@@ -48,20 +57,23 @@ repositories {
 }
 
 /*
- * ---- OpModes kept out of the SIMULATOR build only ----
- * (they still build and deploy to the physical robot via :TeamCode.)
+ * PedroPathing - keep this in sync with build.dependencies.gradle, so the simulator and
+ * the physical robot run the SAME path follower.
  *
- * Each entry names something the simulator cannot yet provide - the Limelight, the
- * Panels dashboard, PedroPathing, or an Android API. Later commits supply those and
- * shorten this list.
+ * ':core' is a plain, pure-JVM jar (no Android, no FTC SDK) and is consumed directly.
+ * ':ftc' - the layer that binds the follower to DcMotors, the IMU and the Pinpoint - is
+ * published as an AAR, which a plain-Java module cannot consume. That AAR turns out to
+ * hold nothing but a manifest and classes.jar, so extractPedroPathingFtc below unpacks
+ * the jar and puts that on the classpath. Its com.qualcomm.* calls then bind to the
+ * simulator's stub SDK.
  */
-def simIncompatibleOpModes = [
-        // --- still missing: PedroPathing ---
-        'org/firstinspires/ftc/teamcode/pedroPathing/**',
-        'org/firstinspires/ftc/teamcode/autonomous/PedropathingAuto.java',
-        'org/firstinspires/ftc/teamcode/autonomous/StateMachine/**',
-        'org/firstinspires/ftc/teamcode/teleop/TestTeleopPedropathing.java',
-]
+def pedroPathingVersion = '2.1.2'
+def pedroPathingTelemetryVersion = '1.0.0'   // com.pedropathing:telemetry - SelectableOpMode
+
+// ---- OpModes the stub SDK cannot compile: kept out of the SIMULATOR build only ----
+// (they still build and deploy on the physical robot via :TeamCode.)
+// Nothing is currently excluded: every OpMode in TeamCode compiles for the simulator.
+def simIncompatibleOpModes = []
 
 def sharedOpModesDir = layout.buildDirectory.dir('shared-opmodes')
 
@@ -87,8 +99,48 @@ sourceSets {
     }
 }
 
+configurations {
+    // PedroPathing AARs, fetched so we can unpack their classes.jar (see below).
+    pedroPathingFtcAar { transitive = false }
+    pedroPathingTelemetryAar { transitive = false }
+}
+
+def pedroPathingFtcJar = layout.buildDirectory.file("pedropathing/pedropathing-ftc-${pedroPathingVersion}.jar")
+def pedroPathingTelemetryJar = layout.buildDirectory.file("pedropathing/pedropathing-telemetry-${pedroPathingTelemetryVersion}.jar")
+
+def extractPedroPathingFtc = tasks.register('extractPedroPathingFtc', Copy) {
+    description = "Unpacks classes.jar from the PedroPathing ftc AAR so a plain-Java module can use it."
+    from({ configurations.pedroPathingFtcAar.collect { zipTree(it) } }) {
+        include 'classes.jar'
+    }
+    into pedroPathingFtcJar.map { it.asFile.parentFile }
+    rename 'classes.jar', "pedropathing-ftc-${pedroPathingVersion}.jar"
+}
+
+/*
+ * com.pedropathing:telemetry supplies SelectableOpMode, the menu-driven OpMode that
+ * pedroPathing/Tuning.java extends. Despite living alongside the Panels dashboard it
+ * depends on nothing but OpMode, Gamepad and Telemetry, so it binds cleanly to the
+ * simulator's stub SDK.
+ */
+def extractPedroPathingTelemetry = tasks.register('extractPedroPathingTelemetry', Copy) {
+    description = "Unpacks classes.jar from the PedroPathing telemetry AAR (SelectableOpMode)."
+    from({ configurations.pedroPathingTelemetryAar.collect { zipTree(it) } }) {
+        include 'classes.jar'
+    }
+    into pedroPathingTelemetryJar.map { it.asFile.parentFile }
+    rename 'classes.jar', "pedropathing-telemetry-${pedroPathingTelemetryVersion}.jar"
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    pedroPathingFtcAar "com.pedropathing:ftc:${pedroPathingVersion}@aar"
+    pedroPathingTelemetryAar "com.pedropathing:telemetry:${pedroPathingTelemetryVersion}@aar"
+
+    implementation "com.pedropathing:core:${pedroPathingVersion}"
+    implementation files(pedroPathingFtcJar) { builtBy extractPedroPathingFtc }
+    implementation files(pedroPathingTelemetryJar) { builtBy extractPedroPathingTelemetry }
 }
 
 tasks.named('run') {

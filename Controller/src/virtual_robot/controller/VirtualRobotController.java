@@ -972,9 +972,15 @@ public class VirtualRobotController {
      * Base class for OpMode.
      */
     public class OpModeBase {
-        public final HardwareMap hardwareMap;
-        public final Gamepad gamepad1;
-        public final Gamepad gamepad2;
+        /*
+         * Deliberately NOT final, matching the real FTC SDK, where these are plain mutable
+         * fields on OpMode. Library code assigns them to hand an OpMode its context - e.g.
+         * PedroPathing's SelectableOpMode injects them into the OpMode the user picks from
+         * its menu. Making them final produces an IllegalAccessError when it does so.
+         */
+        public HardwareMap hardwareMap;
+        public Gamepad gamepad1;
+        public Gamepad gamepad2;
         public Telemetry telemetry;
 
         public OpModeBase() {

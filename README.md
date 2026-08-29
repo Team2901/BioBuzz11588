@@ -34,14 +34,62 @@ The simulator compiles the *same* files as the Android `:TeamCode` module
 annotate `@TeleOp` / `@Autonomous`, extend `OpMode` / `LinearOpMode` — they appear
 in both the Driver Station and the simulator's Op Mode dropdown with no changes.
 
-**What runs in the simulator so far**
+**Robot configuration name**
 
-Nothing in `TeamCode` yet. The team's OpModes reach for the Limelight, the Panels
-dashboard, PedroPathing and Android APIs that this first cut does not provide, so
-they are all listed in `simIncompatibleOpModes` in `Controller/build.gradle`.
-Excluding a file only keeps it out of the **simulator** build; it still builds and
-deploys to the robot exactly as before. Later commits supply the missing pieces and
-shorten that list.
+`ConfigUtilities.getRobotConfigurationName()` works in the simulator: it reports the
+robot picked in the simulator's **Configuration** dropdown (`"Mecanum Bot"`,
+`"Claw Bot"`, ...), the same way it reports the active Robot Controller configuration
+on a real robot. Team code that branches on the configuration name therefore behaves
+sensibly in both places, with no simulator-specific branches. Before a configuration
+is chosen it reports `"No Configuration"`; it never returns null.
+
+**PedroPathing**
+
+The simulator uses the *same* PedroPathing the robot does — `core`, `ftc` and the
+`telemetry` artifact that provides `SelectableOpMode` — so autonomous paths can be
+watched on the simulated field before they are run on the robot, and `Tuning` runs
+here too. Keep `pedroPathingVersion` and `pedroPathingTelemetryVersion` in
+`Controller/build.gradle` in sync with `build.dependencies.gradle`.
+
+PedroPathing's tuned constants in `pedroPathing/Constants.java` describe the
+*physical* robot — its mass, PIDF gains and track width. The simulated robot is not
+that machine, so path following will not match it exactly; use the simulator to check
+path *geometry* and autonomous logic, and tune on the real robot.
+
+**Excluding an OpMode from the simulator**
+
+Nothing in `TeamCode` is excluded today — every OpMode compiles and runs in both
+places from a single shared copy of the source, with no duplicated or
+simulator-specific team files.
+
+If you ever write an OpMode the simulator cannot compile — typically because it uses
+a library or an FTC SDK class the simulator's approximation does not provide — add
+its path to the **`simIncompatibleOpModes`** list in `Controller/build.gradle`:
+
+```groovy
+def simIncompatibleOpModes = [
+        'org/firstinspires/ftc/teamcode/teleop/MyNewTeleop.java',
+]
+```
+
+Paths are relative to `TeamCode/src/main/java`, and `**` wildcards work for whole
+folders. Excluding a file only keeps it out of the **simulator** build; it still
+builds and deploys to the robot exactly as before. Say why in a comment, so the entry
+can be removed once the gap is filled.
+
+**What the simulator cannot really do**
+
+Two pieces of hardware have no counterpart here, so their OpModes run without doing
+anything useful:
+
+* **Limelight** — there is no camera. `getLatestResult()` always returns null, so
+  OpModes take their no-target path. The mecanum robot configurations carry a
+  `"limelight"` device so that code expecting one still initialises.
+* **Panels** (`com.bylazar.*`) — there is no web dashboard. `@Configurable` fields
+  keep their source values, field drawing is discarded, and Panels telemetry is
+  forwarded to the simulator's own telemetry window instead of being lost.
+
+Both are stubbed under `Controller/src`, alongside the FTC SDK approximation.
 
 ## Getting Started
 If you are new to robotics or new to the *FIRST* Tech Challenge, then you should consider reviewing the [FTC Blocks Tutorial](https://ftc-docs.firstinspires.org/programming_resources/blocks/Blocks-Tutorial.html) to get familiar with how to use the control system:

@@ -88,7 +88,7 @@ public abstract class DynamicMecanumBase extends VirtualBot {
         imuNew = hardwareMap.get(BNO055IMUNew.class, "imu");
         colorSensor = (VirtualRobotController.ColorSensorImpl) hardwareMap.colorSensor.get("color_sensor");
 
-        goBildaPinpointDriverInternal = hardwareMap.get(GoBildaPinpointDriverInternal.class, "pinpoint");
+        goBildaPinpointDriverInternal = hardwareMap.get(GoBildaPinpointDriverInternal.class, "odo");
 
         hardwareMap.setActive(false);
 
@@ -136,7 +136,7 @@ public abstract class DynamicMecanumBase extends VirtualBot {
         hardwareMap.put("imu", new BNO055IMUImpl(this, 10));
         hardwareMap.put("imu", new BNO055IMUNew(this, 10));
         hardwareMap.put("color_sensor", controller.new ColorSensorImpl());
-        hardwareMap.put("pinpoint", new GoBildaPinpointDriverInternal());
+        hardwareMap.put("odo", new GoBildaPinpointDriverInternal());
         /*
          * A Limelight, as mounted on the team's competition robot. The simulator has no
          * camera, so it reports "not connected" and never returns a result; OpModes that

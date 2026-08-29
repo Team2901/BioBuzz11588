@@ -102,7 +102,7 @@ public abstract class MecanumPhysicsBase extends VirtualBot {
         colorSensor = (VirtualRobotController.ColorSensorImpl) hardwareMap.colorSensor.get("color_sensor");
 
         sparkFunOTOSInternal = hardwareMap.get(SparkFunOTOSInternal.class, "sensor_otos");
-        goBildaPinpointDriverInternal = hardwareMap.get(GoBildaPinpointDriverInternal.class, "pinpoint");
+        goBildaPinpointDriverInternal = hardwareMap.get(GoBildaPinpointDriverInternal.class, "odo");
 
         octoQuad = hardwareMap.get(OctoQuadImpl.class, "octoquad");
         for (int i=0; i<4; i++){
@@ -167,7 +167,7 @@ public abstract class MecanumPhysicsBase extends VirtualBot {
         hardwareMap.put("imu", new BNO055IMUNew(this, 10));
         hardwareMap.put("color_sensor", controller.new ColorSensorImpl());
         hardwareMap.put("sensor_otos", new SparkFunOTOSInternal());
-        hardwareMap.put("pinpoint", new GoBildaPinpointDriverInternal());
+        hardwareMap.put("odo", new GoBildaPinpointDriverInternal());
         hardwareMap.put("octoquad", new OctoQuadImpl());
         /*
          * A Limelight, as mounted on the team's competition robot. The simulator has no
