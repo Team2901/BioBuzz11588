@@ -348,6 +348,14 @@ public class VirtualRobotController {
     public VirtualBot getVirtualBotInstance(Class<?> c){
         try {
             Annotation a = c.getAnnotation(BotConfig.class);
+            /*
+             * Publish the selected configuration's name (e.g. "Mecanum Bot") so that the
+             * emulated Robot Controller settings can report it. This is what lets team code
+             * calling ConfigUtilities.getRobotConfigurationName() get a real answer here,
+             * exactly as it would on a robot. See android.preference.PreferenceManager.
+             */
+            System.setProperty(android.preference.PreferenceManager.CONFIGURATION_NAME_PROPERTY,
+                    ((BotConfig) a).name());
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/virtual_robot/robots/fxml/" + ((BotConfig) a).filename() + ".fxml"));
             Group group = (Group) loader.load();
             VirtualBot bot = (VirtualBot) loader.getController();

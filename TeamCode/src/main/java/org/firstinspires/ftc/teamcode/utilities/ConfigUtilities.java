@@ -5,12 +5,14 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.Method;
 
 public class ConfigUtilities {
+
+    /** Returned when the active configuration cannot be determined at all. */
+    public static final String UNKNOWN_CONFIGURATION = "Unknown Configuration";
 
     private static Context getContext() {
         try {
@@ -21,17 +23,30 @@ public class ConfigUtilities {
             throw new IllegalArgumentException("No context could be retrieved!");
         }
     }
+
+    /**
+     * The name of the hardware configuration currently active on the Robot Controller,
+     * e.g. "coachbot 2901 24-25".
+     * <p>
+     * In the Virtual Robot simulator this reports the robot selected in the simulator's
+     * Configuration dropdown instead, e.g. "Mecanum Bot" (or "No Configuration" before
+     * one has been chosen), so configuration-dependent code behaves sensibly in both
+     * places.
+     * <p>
+     * Never returns null, so callers can compare it directly; if the configuration
+     * cannot be determined at all it reports {@link #UNKNOWN_CONFIGURATION}.
+     */
     public static String getRobotConfigurationName() {
-        Context context = getContext();
-        SharedPreferences preferences= PreferenceManager.getDefaultSharedPreferences(context);
-        String objSerialized = preferences.getString("pref_hardware_config_filename", "");
-        String configName = null;
         try {
+            Context context = getContext();
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+            String objSerialized = preferences.getString("pref_hardware_config_filename", "");
             JSONObject jObject = new JSONObject(objSerialized);
-            configName = jObject.getString("name");
-        } catch (JSONException e) {
-            e.printStackTrace();
+            return jObject.getString("name");
+        } catch (Throwable t) {
+            t.printStackTrace();
+            // Running somewhere with no Robot Controller settings to read at all.
         }
-        return configName;
+        return UNKNOWN_CONFIGURATION;
     }
 }
