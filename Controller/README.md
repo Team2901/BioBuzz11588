@@ -92,6 +92,65 @@ folders. Excluding a file only keeps it out of the **simulator** build; it still
 builds and deploys to the robot exactly as before. Say why in a comment, so the entry
 can be dropped once the gap is filled.
 
+## How the build works, and how it differs from the robot's
+
+Both targets are Gradle subprojects of the same project, listed in `settings.gradle`,
+but they are built in completely different ways.
+
+| | `:FtcRobotController` + `:TeamCode` | `:Controller` |
+|---|---|---|
+| Plugin | `com.android.application` | `application` + `org.openjfx.javafxplugin` |
+| Output | an Android APK, installed on the Control Hub | a desktop JavaFX app, run on your PC |
+| FTC SDK | real AARs, `org.firstinspires.ftc:*:11.2.1` | the source approximation in `src/` |
+| Java level | 8 (`build.common.gradle`) | whatever JVM runs Gradle (JBR 21 in Android Studio) |
+| Shared config | `build.common.gradle`, `build.dependencies.gradle` | none - this module stands alone |
+
+The two never share a classpath. `:Controller` deliberately does **not** depend on
+`:FtcRobotController` and never sees the real FTC artifacts, so its `com.qualcomm.*`
+symbols resolve only to the approximation in `src/`. That is what keeps two
+definitions of the same class from colliding: each target compiles the same OpMode
+source against a different definition of the SDK. It is also why the FTC artifacts
+could not simply be reused here - they are Android AARs, which a plain-Java module
+cannot consume at all.
+
+### The shared OpModes are copied, not referenced
+
+`:TeamCode` compiles `TeamCode/src/main/java` directly. `:Controller` cannot also
+point a source root at that folder: Android Studio requires every source root to
+belong to exactly one module, and sharing it makes the IDE report *"Duplicate content
+roots detected"* and pull the folder out of `:TeamCode`.
+
+Instead a `Sync` task copies the sim-compatible OpModes into `build/shared-opmodes`,
+a generated folder the IDE ignores, and that is the simulator's source root. Keep
+editing OpModes in `TeamCode/src/main/java` as normal - the copy refreshes on every
+`:Controller` build. If you ever go looking, compile errors from the simulator name
+files under `build/shared-opmodes/...`; the file to fix is the original in `TeamCode`.
+
+### PedroPathing is unpacked from its AAR
+
+`:TeamCode` just declares `com.pedropathing:ftc` and Android handles the AAR.
+`:Controller` cannot, so `extractPedroPathingFtc` and `extractPedroPathingTelemetry`
+pull `classes.jar` out of each AAR and put that on the classpath; `com.pedropathing:core`
+is a plain jar and is used as-is. The versions are declared at the top of
+`build.gradle` and must match `build.dependencies.gradle`.
+
+### Building it
+
+`./gradlew :Controller:run` runs, in order:
+
+```
+extractPedroPathingFtc  ->  syncSharedOpModes  ->  compileJava  ->  processResources  ->  run
+extractPedroPathingTelemetry
+```
+
+`processResources` matters more than it looks: the FXML layouts, the field `.bmp`
+images and the robot geometry live next to the source under `src/`, and are packaged
+from there.
+
+Building or deploying the robot app is untouched by any of this - `:TeamCode` has no
+dependency on `:Controller`, so `assembleDebug` behaves exactly as it did before the
+simulator existed.
+
 ## Robot configurations
 
 Chosen from the **Configuration** dropdown before pressing INIT. Position the robot
