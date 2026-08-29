@@ -88,6 +88,30 @@
             </HBox.margin>
         </StackPane>
 
+        <VBox alignment="CENTER">
+            <children>
+                <Button fx:id="btnBack" mnemonicParsing="false" onMouseExited="#handleGamePadButtonMouseEvent" onMousePressed="#handleGamePadButtonMouseEvent" onMouseReleased="#handleGamePadButtonMouseEvent" text="Back">
+                    <font>
+                        <Font size="11.0" />
+                    </font>
+                    <VBox.margin>
+                        <Insets bottom="4.0" left="2.0" right="2.0" top="4.0" />
+                    </VBox.margin>
+                </Button>
+                <Button fx:id="btnStart" mnemonicParsing="false" onMouseExited="#handleGamePadButtonMouseEvent" onMousePressed="#handleGamePadButtonMouseEvent" onMouseReleased="#handleGamePadButtonMouseEvent" text="Start">
+                    <font>
+                        <Font size="11.0" />
+                    </font>
+                    <VBox.margin>
+                        <Insets bottom="4.0" left="2.0" right="2.0" top="4.0" />
+                    </VBox.margin>
+                </Button>
+            </children>
+            <HBox.margin>
+                <Insets bottom="5.0" left="2.0" right="2.0" top="5.0" />
+            </HBox.margin>
+        </VBox>
+
         <StackPane fx:id="joyStickRightPane" alignment="TOP_LEFT" maxHeight="120.0" maxWidth="120.0" minHeight="120.0" minWidth="120.0" onMouseDragged="#handleJoystickMouseEvent" onMouseExited="#handleJoystickMouseEvent" onMousePressed="#handleJoystickMouseEvent" onMouseReleased="#handleJoystickMouseEvent" prefHeight="120.0" prefWidth="120.0">
             <children>
                 <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#404040" height="120.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="4.0" width="120.0" />

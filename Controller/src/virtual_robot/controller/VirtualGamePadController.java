@@ -41,6 +41,8 @@ public class VirtualGamePadController {
     @FXML Button btnDD;
     @FXML Button btnLB;
     @FXML Button btnRB;
+    @FXML Button btnBack;
+    @FXML Button btnStart;
     @FXML Slider sldLeft;
     @FXML Slider sldRight;
 
@@ -59,6 +61,8 @@ public class VirtualGamePadController {
     volatile boolean dDPressed = false;
     volatile boolean lBPressed = false;
     volatile boolean rBPressed = false;
+    volatile boolean backPressed = false;
+    volatile boolean startPressed = false;
     volatile float leftTrigger = 0;
     volatile float rightTrigger = 0;
 
@@ -153,6 +157,8 @@ public class VirtualGamePadController {
         else if (btn == btnDD) dDPressed = result;
         else if (btn == btnLB) lBPressed = result;
         else if (btn == btnRB) rBPressed = result;
+        else if (btn == btnBack) backPressed = result;
+        else if (btn == btnStart) startPressed = result;
     }
 
     void resetGamePad(){
@@ -170,6 +176,8 @@ public class VirtualGamePadController {
         dDPressed = false;
         lBPressed = false;
         rBPressed = false;
+        backPressed = false;
+        startPressed = false;
         sldLeft.setValue(0);
         sldRight.setValue(0);
         leftTrigger = 0;
@@ -216,6 +224,8 @@ public class VirtualGamePadController {
         public final boolean dpad_down;
         public final boolean left_bumper;
         public final boolean right_bumper;
+        public final boolean back;
+        public final boolean start;
         public final float left_trigger;
         public final float right_trigger;
 
@@ -234,6 +244,8 @@ public class VirtualGamePadController {
             dpad_down = VirtualGamePadController.this.dDPressed;
             left_bumper = VirtualGamePadController.this.lBPressed;
             right_bumper = VirtualGamePadController.this.rBPressed;
+            back = VirtualGamePadController.this.backPressed;
+            start = VirtualGamePadController.this.startPressed;
             left_trigger = VirtualGamePadController.this.leftTrigger;
             right_trigger = VirtualGamePadController.this.rightTrigger;
         }

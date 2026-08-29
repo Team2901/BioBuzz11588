@@ -189,9 +189,9 @@ public class Gamepad {
         dpad_down = state.dpad_down;
         dpad_left = state.dpad_left;
         dpad_right = state.dpad_right;
-        back = false;
+        back = state.back;
         guide = false;
-        start = false;
+        start = state.start;
         left_bumper = state.left_bumper;
         right_bumper = state.right_bumper;
         left_stick_button = false;
