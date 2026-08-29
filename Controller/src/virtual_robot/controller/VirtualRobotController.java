@@ -23,6 +23,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Polyline;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Stage;
+import javafx.stage.Window;
 import javafx.util.Callback;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
@@ -76,6 +78,7 @@ public class VirtualRobotController {
     @FXML private CheckBox checkBoxGamePad2;
     @FXML private BorderPane borderPane;
     @FXML private CheckBox cbxShowPath;
+    @FXML private CheckBox cbxShowGamePad2;
     @FXML private CheckBox checkBoxAutoHuman;
     @FXML private Label lblRunTime;
     @FXML private HBox hbxGamePads;
@@ -93,6 +96,9 @@ public class VirtualRobotController {
     ScheduledExecutorService gamePadExecutorService = Executors.newSingleThreadScheduledExecutor();
 
     VirtualGamePadController virtualGamePadController = null;
+    VirtualGamePadController virtualGamePad2Controller = null;
+    // The gamepad 2 panel; kept out of the layout until the user asks for it.
+    HBox virtualGamePad2Box = null;
 
     //Background Image and Field
     private final Image backgroundImage = Config.BACKGROUND;
@@ -187,12 +193,26 @@ public class VirtualRobotController {
             vbxRight.getChildren().remove(hbxGamePads);
 //            checkBoxGamePad1.setVisible(false);
 //            checkBoxGamePad2.setVisible(false);
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("virtual_gamepad.fxml"));
             try{
-                HBox hbox = (HBox)loader.load();
-                virtualGamePadController = loader.getController();
+                FXMLLoader loader1 = new FXMLLoader(getClass().getResource("virtual_gamepad.fxml"));
+                HBox hbox1 = (HBox)loader1.load();
+                virtualGamePadController = loader1.getController();
                 virtualGamePadController.setVirtualRobotController(this);
-                borderPane.setBottom(hbox);
+
+                /*
+                 * A second gamepad, for op modes that use gamepad2. It is loaded up front but
+                 * left out of the layout: most op modes only need gamepad1, and an unused
+                 * second panel takes up screen space. The "Show gamepad 2" checkbox adds it.
+                 */
+                FXMLLoader loader2 = new FXMLLoader(getClass().getResource("virtual_gamepad.fxml"));
+                virtualGamePad2Box = (HBox)loader2.load();
+                virtualGamePad2Controller = loader2.getController();
+                virtualGamePad2Controller.setVirtualRobotController(this);
+                virtualGamePad2Box.setVisible(false);
+                virtualGamePad2Box.setManaged(false);
+
+                VBox gamePads = new VBox(hbox1, virtualGamePad2Box);
+                borderPane.setBottom(gamePads);
             } catch (IOException e){
                 System.out.println("Virtual GamePad UI Failed to Load");
             }
@@ -202,6 +222,9 @@ public class VirtualRobotController {
             checkBoxGamePad1.setStyle("-fx-opacity: 1");
             checkBoxGamePad2.setDisable(true);
             checkBoxGamePad2.setStyle("-fx-opacity: 1");
+            // Real gamepads are plugged in, so there is no panel to show or hide.
+            cbxShowGamePad2.setVisible(false);
+            cbxShowGamePad2.setManaged(false);
             gamePadHelper = new RealGamePadHelper();
         }
         gamePadExecutorService.scheduleAtFixedRate(gamePadHelper, 0, 20, TimeUnit.MILLISECONDS);
@@ -717,6 +740,26 @@ public class VirtualRobotController {
         pathLine.setVisible(cbxShowPath.isSelected());
     }
 
+    /**
+     * Show or hide the second virtual gamepad. While it is hidden, gamepad2 reports
+     * nothing pressed, so hiding it cannot leave a stale button held down.
+     */
+    @FXML
+    private void handleCbxShowGamePad2Action(ActionEvent event){
+        if (virtualGamePad2Box == null) return;
+        boolean show = cbxShowGamePad2.isSelected();
+        virtualGamePad2Box.setVisible(show);
+        virtualGamePad2Box.setManaged(show);
+        if (!show && virtualGamePad2Controller != null) virtualGamePad2Controller.resetGamePad();
+        /*
+         * The window is not resizable and was sized to its contents when it opened, so it
+         * will not grow or shrink on its own. Without this the panel would be revealed in
+         * the layout but left outside the window.
+         */
+        Window window = borderPane.getScene() == null ? null : borderPane.getScene().getWindow();
+        if (window instanceof Stage) ((Stage)window).sizeToScene();
+    }
+
     public void updateTelemetryDisplay(String telemetryText) {
         txtTelemetry.setText(telemetryText);
     }
@@ -1003,17 +1046,26 @@ public class VirtualRobotController {
             VirtualGamePadController.ControllerState state = virtualGamePadController.getState();
             gamePad1.update(state);
             virtualGamePadController.setOutputs(gamePad1);
-            gamePad2.resetValues();
+
+            // gamepad2 only reports input while its panel is showing.
+            if (virtualGamePad2Controller != null && cbxShowGamePad2.isSelected()) {
+                gamePad2.update(virtualGamePad2Controller.getState());
+                virtualGamePad2Controller.setOutputs(gamePad2);
+            } else {
+                gamePad2.resetValues();
+            }
         }
 
         public void quit(){
             //Make sure that LED and Rumble threads are interrupted if user closes the application while an op mode is
             //running.
             virtualGamePadController.interruptLEDandRumbleThreads();
+            if (virtualGamePad2Controller != null) virtualGamePad2Controller.interruptLEDandRumbleThreads();
         }
 
         public void onOpModeFinished(){
             virtualGamePadController.resetGamePad();
+            if (virtualGamePad2Controller != null) virtualGamePad2Controller.resetGamePad();
         }
     }
 

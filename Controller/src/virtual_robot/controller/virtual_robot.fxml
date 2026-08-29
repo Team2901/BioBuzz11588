@@ -66,6 +66,15 @@
                   </CheckBox>
                </children>
             </HBox>
+            <HBox prefWidth="200.0">
+               <children>
+                  <CheckBox fx:id="cbxShowGamePad2" mnemonicParsing="false" onAction="#handleCbxShowGamePad2Action" text="Show gamepad 2">
+                     <padding>
+                        <Insets left="10.0" top="15.0" />
+                     </padding>
+                  </CheckBox>
+               </children>
+            </HBox>
          </children>
       </VBox>
    </right>
