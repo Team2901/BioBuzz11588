@@ -78,6 +78,8 @@ public class YawPitchRollAngles {
     private final double pitchDegrees;
     private final double rollDegrees;
     private final long acquisitionTime;
+    /** The unit these angles were supplied in; the no-argument getters report in it. */
+    private final AngleUnit constructionUnit;
 
     /**
      * See the top-level class Javadoc for the format that these angles need to be in.
@@ -87,6 +89,31 @@ public class YawPitchRollAngles {
         this.pitchDegrees = angleUnit.toDegrees(pitch);
         this.rollDegrees = angleUnit.toDegrees(roll);
         this.acquisitionTime = acquisitionTime;
+        this.constructionUnit = angleUnit;
+    }
+
+    /**
+     * @return The side-to-side lateral rotation of the robot, in the unit this object was
+     *         constructed with, normalized to the range of [-180,+180) degrees.
+     */
+    public double getYaw() {
+        return getYaw(constructionUnit);
+    }
+
+    /**
+     * @return The front-to-back rotation of the robot, in the unit this object was
+     *         constructed with, normalized to the range of [-180,+180) degrees.
+     */
+    public double getPitch() {
+        return getPitch(constructionUnit);
+    }
+
+    /**
+     * @return The side-to-side tilt of the robot, in the unit this object was constructed
+     *         with, normalized to the range of [-180,+180) degrees.
+     */
+    public double getRoll() {
+        return getRoll(constructionUnit);
     }
 
     /**

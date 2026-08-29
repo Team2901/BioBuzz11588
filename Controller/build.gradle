@@ -51,13 +51,25 @@ repositories {
  * ---- OpModes kept out of the SIMULATOR build only ----
  * (they still build and deploy to the physical robot via :TeamCode.)
  *
- * This first cut brings the simulator up as a Gradle module. Nothing in TeamCode
- * compiles against the stub SDK yet: the team's OpModes reach for Limelight, the
- * Panels dashboard, PedroPathing and Android APIs that the simulator does not
- * provide. Later commits add those, one group at a time, and shorten this list.
+ * Each entry names something the simulator cannot yet provide - the Limelight, the
+ * Panels dashboard, PedroPathing, or an Android API. Later commits supply those and
+ * shorten this list.
  */
 def simIncompatibleOpModes = [
-        'org/firstinspires/ftc/teamcode/**',
+        // --- still missing: Limelight, Panels, PedroPathing, Android APIs ---
+        'org/firstinspires/ftc/teamcode/pedroPathing/**',
+        'org/firstinspires/ftc/teamcode/autonomous/**',
+        'org/firstinspires/ftc/teamcode/outreach/**',
+        'org/firstinspires/ftc/teamcode/utilities/**',
+        'org/firstinspires/ftc/teamcode/hardware/Hardware.java',
+        'org/firstinspires/ftc/teamcode/teleop/QualTeleop.java',
+        'org/firstinspires/ftc/teamcode/teleop/LimelightTeleop.java',
+        'org/firstinspires/ftc/teamcode/teleop/TestTeleopPedropathing.java',
+        'org/firstinspires/ftc/teamcode/testing/LimelightTestVision.java',
+        'org/firstinspires/ftc/teamcode/testing/LaunchMotorTest.java',
+        // extend AbstractAutonomous, which needs hardware/Hardware.java
+        'org/firstinspires/ftc/teamcode/testing/TurnAutoTest.java',
+        'org/firstinspires/ftc/teamcode/testing/testMotorDriveAuto.java',
 ]
 
 def sharedOpModesDir = layout.buildDirectory.dir('shared-opmodes')

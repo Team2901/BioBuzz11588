@@ -130,4 +130,26 @@ public interface DcMotor extends DcMotorSimple {
      * @see #getController()
      */
     int getPortNumber();
+
+    /**
+     * Sets the motor to float (coast) rather than hold position. Deprecated in the FTC SDK in
+     * favour of setZeroPowerBehavior() + setPower(); provided here as a default so that team
+     * code written against the real SDK compiles and behaves sensibly in the simulator.
+     *
+     * @deprecated use {@link #setZeroPowerBehavior(ZeroPowerBehavior)} and {@link #setPower(double)}
+     */
+    @Deprecated
+    default void setPowerFloat() {
+        setZeroPowerBehavior(ZeroPowerBehavior.FLOAT);
+        setPower(0.0);
+    }
+
+    /**
+     * Returns whether the motor is currently in a float power level.
+     * @return whether the motor is currently floating
+     * @see #setPowerFloat()
+     */
+    default boolean getPowerFloat() {
+        return getZeroPowerBehavior() == ZeroPowerBehavior.FLOAT && getPower() == 0.0;
+    }
 }

@@ -293,6 +293,50 @@ public class HardwareMap implements Iterable<HardwareDevice>{
             return map.keySet();
         }
 
+        /**
+         * Returns the class of the type of device managed by this DeviceMapping.
+         * @return the class of the type of device managed by this DeviceMapping
+         */
+        public Class<DEVICE_TYPE> getDeviceTypeClass(){
+            return this.deviceTypeClass;
+        }
+
+        /**
+         * Casts the indicated object to the type of device managed by this DeviceMapping.
+         * @param obj the object to cast
+         * @return the cast object
+         */
+        public DEVICE_TYPE cast(Object obj){
+            return this.deviceTypeClass.cast(obj);
+        }
+
+        /**
+         * Returns whether a device of the indicated name is contained within this mapping.
+         * @param deviceName the name sought
+         * @return whether a device of that name is present
+         */
+        public synchronized boolean contains(String deviceName){
+            deviceName = deviceName.trim();
+            return map.containsKey(deviceName);
+        }
+
+        /**
+         * Returns the set of name-device pairs in this mapping. Useful for iterating over
+         * every configured device of a given type, e.g. to print all motors to telemetry.
+         * @return the name-device pairs
+         */
+        public synchronized Set<Map.Entry<String, DEVICE_TYPE>> entrySet(){
+            return new HashSet<>(map.entrySet());
+        }
+
+        /**
+         * Returns the number of devices in this mapping.
+         * @return the number of devices
+         */
+        public synchronized int size(){
+            return map.size();
+        }
+
     }
 
 }
