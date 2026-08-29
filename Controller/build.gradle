@@ -1,0 +1,94 @@
+/*
+ * :Controller  -  the Virtual Robot simulator.
+ *
+ * This is a PLAIN JAVA + JavaFX desktop application, completely independent of the
+ * Android robot-controller build.  It carries its own hand-written, source-level
+ * "approximation" of the FTC SDK (com.qualcomm.**, org.firstinspires.ftc.robotcore.**,
+ * org.firstinspires.ftc.vision.**) under src/, plus small android/androidx compile
+ * shims.  It must NOT depend on :FtcRobotController and must NOT pull the real FTC
+ * AARs - the com.qualcomm.* symbols here resolve only to the stub source.  (Those FTC
+ * artifacts are Android AARs anyway, which a plain-Java module cannot consume.)
+ *
+ * It compiles the SAME OpMode files that the Android :TeamCode module compiles.
+ * We do NOT add ../TeamCode/src/main/java directly as a source root: IntelliJ /
+ * Android Studio require every source root to belong to exactly one module, so
+ * sharing the folder with :TeamCode triggers "Duplicate content roots detected".
+ * Instead the 'syncSharedOpModes' task copies the sim-compatible OpMode files into
+ * build/shared-opmodes (a generated dir the IDE ignores) and that is the source
+ * root.  Edit OpModes in TeamCode/src/main/java as usual; the copy refreshes on
+ * every :Controller build.
+ *
+ * Run it with:   ./gradlew :Controller:run
+ */
+
+plugins {
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+/*
+ * No explicit Java toolchain: this module simply compiles and runs with whatever
+ * JVM runs Gradle.  Gradle 9.1 already requires JDK 17+, and Android Studio's
+ * bundled JBR (21) satisfies it, so the simulator always gets a modern JVM while
+ * the Android modules keep their own sourceCompatibility 1.8.
+ */
+
+javafx {
+    version = '17.0.6'
+    // The simulator is FXML + Controls only (no javafx.media / javafx.swing usage found).
+    modules = ['javafx.controls', 'javafx.fxml', 'javafx.graphics']
+}
+
+application {
+    mainClass = 'virtual_robot.controller.VirtualRobotApplication'
+}
+
+repositories {
+    mavenCentral()
+}
+
+/*
+ * ---- OpModes kept out of the SIMULATOR build only ----
+ * (they still build and deploy to the physical robot via :TeamCode.)
+ *
+ * This first cut brings the simulator up as a Gradle module. Nothing in TeamCode
+ * compiles against the stub SDK yet: the team's OpModes reach for Limelight, the
+ * Panels dashboard, PedroPathing and Android APIs that the simulator does not
+ * provide. Later commits add those, one group at a time, and shorten this list.
+ */
+def simIncompatibleOpModes = [
+        'org/firstinspires/ftc/teamcode/**',
+]
+
+def sharedOpModesDir = layout.buildDirectory.dir('shared-opmodes')
+
+def syncSharedOpModes = tasks.register('syncSharedOpModes', Sync) {
+    description = 'Copies the sim-compatible TeamCode OpModes into a generated source dir.'
+    from(rootProject.file('TeamCode/src/main/java')) {
+        exclude simIncompatibleOpModes
+    }
+    into sharedOpModesDir
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+            srcDir(files(sharedOpModesDir).builtBy(syncSharedOpModes))
+        }
+        // package the FXML / .bmp field images / robot geometry that live next to the source
+        resources {
+            srcDirs = ['src']
+            exclude '**/*.java'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+tasks.named('run') {
+    // Closing the simulator window must not fail the Gradle build.
+    ignoreExitValue = true
+}

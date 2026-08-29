@@ -10,6 +10,39 @@ To use this Android Studio project, you will need Android Studio Ladybug (2024.2
 
 To program your robot in Blocks or OnBot Java, you do not need Android Studio.
 
+## Virtual Robot Simulator (`:Controller`)
+
+This repo carries a **2D robot simulator** in the `Controller/` module so the same
+OpModes can be tested on a PC before deploying to the physical robot. It is a plain
+JavaFX desktop app (a fork of `Beta8397/virtual_robot`) with its own hand-written
+"approximation" of the FTC SDK under `Controller/src`. It is **completely separate
+from the Android build** — it does not touch `:FtcRobotController` or the real FTC
+AARs, and the Android robot-controller app builds and deploys exactly as before.
+
+**Run the simulator**
+
+* Android Studio: pick the **`Run Simulator`** run configuration and press Run.
+* Command line: `./gradlew :Controller:run`
+
+Requires a JDK 17+ to run Gradle (Android Studio's bundled JBR already satisfies
+this). No extra JDK install or setup script is needed.
+
+**How OpModes are shared**
+
+The simulator compiles the *same* files as the Android `:TeamCode` module
+(`TeamCode/src/main/java`). Write OpModes in `org.firstinspires.ftc.teamcode`,
+annotate `@TeleOp` / `@Autonomous`, extend `OpMode` / `LinearOpMode` — they appear
+in both the Driver Station and the simulator's Op Mode dropdown with no changes.
+
+**What runs in the simulator so far**
+
+Nothing in `TeamCode` yet. The team's OpModes reach for the Limelight, the Panels
+dashboard, PedroPathing and Android APIs that this first cut does not provide, so
+they are all listed in `simIncompatibleOpModes` in `Controller/build.gradle`.
+Excluding a file only keeps it out of the **simulator** build; it still builds and
+deploys to the robot exactly as before. Later commits supply the missing pieces and
+shorten that list.
+
 ## Getting Started
 If you are new to robotics or new to the *FIRST* Tech Challenge, then you should consider reviewing the [FTC Blocks Tutorial](https://ftc-docs.firstinspires.org/programming_resources/blocks/Blocks-Tutorial.html) to get familiar with how to use the control system:
 
