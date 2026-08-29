@@ -5,6 +5,7 @@ import com.qualcomm.hardware.bosch.BNO055IMUImpl;
 import com.qualcomm.hardware.bosch.BNO055IMUNew;
 import com.qualcomm.hardware.digitalchickenlabs.OctoQuadImpl;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriverInternal;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOSInternal;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -168,6 +169,12 @@ public abstract class MecanumPhysicsBase extends VirtualBot {
         hardwareMap.put("sensor_otos", new SparkFunOTOSInternal());
         hardwareMap.put("pinpoint", new GoBildaPinpointDriverInternal());
         hardwareMap.put("octoquad", new OctoQuadImpl());
+        /*
+         * A Limelight, as mounted on the team's competition robot. The simulator has no
+         * camera, so it reports "not connected" and never returns a result; OpModes that
+         * guard their vision code take their no-target path.
+         */
+        hardwareMap.put("limelight", new Limelight3A());
     }
 
     /**

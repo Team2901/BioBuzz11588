@@ -4,6 +4,7 @@ import com.qualcomm.hardware.CommonOdometry;
 import com.qualcomm.hardware.bosch.BNO055IMUImpl;
 import com.qualcomm.hardware.bosch.BNO055IMUNew;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriverInternal;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.*;
 import com.qualcomm.robotcore.hardware.configuration.MotorType;
 import javafx.scene.input.MouseEvent;
@@ -136,6 +137,12 @@ public abstract class DynamicMecanumBase extends VirtualBot {
         hardwareMap.put("imu", new BNO055IMUNew(this, 10));
         hardwareMap.put("color_sensor", controller.new ColorSensorImpl());
         hardwareMap.put("pinpoint", new GoBildaPinpointDriverInternal());
+        /*
+         * A Limelight, as mounted on the team's competition robot. The simulator has no
+         * camera, so it reports "not connected" and never returns a result; OpModes that
+         * guard their vision code take their no-target path.
+         */
+        hardwareMap.put("limelight", new Limelight3A());
     }
 
     /**

@@ -56,7 +56,7 @@ repositories {
  * shorten this list.
  */
 def simIncompatibleOpModes = [
-        // --- still missing: Limelight, Panels, PedroPathing, Android APIs ---
+        // --- still missing: Panels, PedroPathing, Android APIs ---
         'org/firstinspires/ftc/teamcode/pedroPathing/**',
         'org/firstinspires/ftc/teamcode/autonomous/**',
         'org/firstinspires/ftc/teamcode/outreach/**',
@@ -65,8 +65,9 @@ def simIncompatibleOpModes = [
         'org/firstinspires/ftc/teamcode/teleop/QualTeleop.java',
         'org/firstinspires/ftc/teamcode/teleop/LimelightTeleop.java',
         'org/firstinspires/ftc/teamcode/teleop/TestTeleopPedropathing.java',
-        'org/firstinspires/ftc/teamcode/testing/LimelightTestVision.java',
         'org/firstinspires/ftc/teamcode/testing/LaunchMotorTest.java',
+        // needs teamcode/utilities, which needs the Android shims
+        'org/firstinspires/ftc/teamcode/testing/LimelightTestVision.java',
         // extend AbstractAutonomous, which needs hardware/Hardware.java
         'org/firstinspires/ftc/teamcode/testing/TurnAutoTest.java',
         'org/firstinspires/ftc/teamcode/testing/testMotorDriveAuto.java',
