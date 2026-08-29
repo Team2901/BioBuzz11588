@@ -56,12 +56,11 @@ repositories {
  * shorten this list.
  */
 def simIncompatibleOpModes = [
-        // --- still missing: PedroPathing, and the outreach Bitmap dependency ---
+        // --- still missing: PedroPathing ---
         'org/firstinspires/ftc/teamcode/pedroPathing/**',
         'org/firstinspires/ftc/teamcode/autonomous/PedropathingAuto.java',
         'org/firstinspires/ftc/teamcode/autonomous/StateMachine/**',
         'org/firstinspires/ftc/teamcode/teleop/TestTeleopPedropathing.java',
-        'org/firstinspires/ftc/teamcode/outreach/**',
 ]
 
 def sharedOpModesDir = layout.buildDirectory.dir('shared-opmodes')
