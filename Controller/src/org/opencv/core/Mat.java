@@ -736,7 +736,20 @@ public class Mat {
         return new Mat(n_zeros(sizes.length, sizes, type));
     }
 
+    /*
+     * Kept as upstream OpenCV has it, so this file stays easy to diff against the real thing.
+     * Object.finalize() is deprecated and marked for removal, which warns both on the override and on
+     * the super call below, hence the suppression. "removal" is the key that actually silences it on
+     * JDK 9+; "deprecation" is there so older toolchains that report it as a plain deprecation are
+     * covered too.
+     *
+     * Nothing here ever runs in the simulator: it never loads the OpenCV native library and never
+     * constructs a Mat (this class exists only so vision OpModes compile), so there is no native
+     * memory to reclaim. If a Mat somehow were created and collected, n_delete would throw
+     * UnsatisfiedLinkError on the finalizer thread.
+     */
     @Override
+    @SuppressWarnings({"deprecation", "removal"})
     protected void finalize() throws Throwable {
         n_delete(nativeObj);
         super.finalize();

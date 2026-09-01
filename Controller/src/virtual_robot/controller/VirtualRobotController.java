@@ -54,6 +54,7 @@ import virtual_robot.keyboard.KeyState;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -393,7 +394,7 @@ public class VirtualRobotController {
     }
 
 
-    private String getNameFromAnnotationOrOpmode(Class c){
+    private String getNameFromAnnotationOrOpmode(Class<?> c){
         String name = "";
         Annotation a1 = c.getAnnotation(TeleOp.class);
         if(a1 != null){
@@ -410,7 +411,7 @@ public class VirtualRobotController {
         return name;
     }
 
-    private String getGroupFromAnnotationOrOpmode(Class c){
+    private String getGroupFromAnnotationOrOpmode(Class<?> c){
         String group = null;
         Annotation a1 = c.getAnnotation(TeleOp.class);
         if(a1 != null){
@@ -726,9 +727,21 @@ public class VirtualRobotController {
 
     private boolean initOpMode() {
         try {
-            Class opModeClass = cbxOpModes.getValue();
-            opMode = (OpMode) opModeClass.newInstance();
+            Class<?> opModeClass = cbxOpModes.getValue();
+            opMode = (OpMode) opModeClass.getDeclaredConstructor().newInstance();
         } catch (Exception exc){
+            /*
+             * An OpMode whose constructor throws arrives here wrapped in InvocationTargetException.
+             * Report the cause rather than the wrapper: that is the OpMode's own error, and it is
+             * what the user needs to see. Otherwise the simulator just refuses to INIT in silence.
+             */
+            Throwable cause = exc;
+            if (exc instanceof InvocationTargetException && exc.getCause() != null) {
+                cause = exc.getCause();
+            }
+            System.out.println("Unable to initialize OpMode " + cbxOpModes.getValue().getName() + ".");
+            System.out.println(cause.getMessage());
+            cause.printStackTrace();
             return false;
         }
         return true;
