@@ -69,6 +69,11 @@ public class HardwareMap implements Iterable<HardwareDevice>{
     public final DeviceMapping<CRServo> crservo = new DeviceMapping(CRServo.class);
 
     /**
+     * Map of all AnalogInput devices in this HardwareMap.
+     */
+    public final DeviceMapping<AnalogInput> analogInput = new DeviceMapping<>(AnalogInput.class);
+
+    /**
      *  Map of all VoltageSensor devices in this HardwareMap.
      */
     public final DeviceMapping<VoltageSensor> voltageSensor = new DeviceMapping(VoltageSensor.class);
@@ -117,6 +122,7 @@ public class HardwareMap implements Iterable<HardwareDevice>{
         if (device instanceof GyroSensor) gyroSensor.put(deviceName, (GyroSensor)device);
         if (device instanceof Servo) servo.put(deviceName, (Servo)device);
         if (device instanceof CRServo) crservo.put(deviceName, (CRServo)device);
+        if (device instanceof AnalogInput) analogInput.put(deviceName, (AnalogInput)device);
         if (device instanceof VoltageSensor) voltageSensor.put(deviceName, (VoltageSensor)device);
     }
 
