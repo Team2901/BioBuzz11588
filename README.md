@@ -10,6 +10,22 @@ To use this Android Studio project, you will need Android Studio Ladybug (2024.2
 
 To program your robot in Blocks or OnBot Java, you do not need Android Studio.
 
+## Virtual Robot Simulator (`:Controller`)
+
+This repo carries a **2D robot simulator** in the `Controller/` module, so OpModes can
+be tried on a PC before they are run on a robot. It compiles the *same*
+`TeamCode/src/main/java` sources as the Android build, so OpModes need no changes to
+work in both places.
+
+* Android Studio: pick the **`Run Simulator`** run configuration and press Run.
+* Command line: `./gradlew :Controller:run`
+
+The simulator is a separate Gradle module and does not affect the robot app, which
+builds and deploys exactly as before.
+
+See **[Controller/README.md](Controller/README.md)** for what the simulator can and
+cannot do, the robot configurations it offers, and its settings.
+
 ## Getting Started
 If you are new to robotics or new to the *FIRST* Tech Challenge, then you should consider reviewing the [FTC Blocks Tutorial](https://ftc-docs.firstinspires.org/programming_resources/blocks/Blocks-Tutorial.html) to get familiar with how to use the control system:
 
