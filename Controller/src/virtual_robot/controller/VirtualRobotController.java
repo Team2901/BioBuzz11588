@@ -38,6 +38,7 @@ import virtual_robot.config.Config;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Orientation;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -75,15 +76,13 @@ public class VirtualRobotController {
     @FXML private Slider sldSystematicMotorError;
     @FXML private Slider sldMotorInertia;
     @FXML private TextArea txtTelemetry;
-    @FXML private CheckBox checkBoxGamePad1;
-    @FXML private CheckBox checkBoxGamePad2;
+    @FXML private ComboBox<GamePadSource> cbxGamePad1Source;
+    @FXML private ComboBox<GamePadSource> cbxGamePad2Source;
     @FXML private BorderPane borderPane;
     @FXML private CheckBox cbxShowPath;
-    @FXML private CheckBox cbxShowGamePad2;
     @FXML private CheckBox checkBoxAutoHuman;
     @FXML private Label lblRunTime;
-    @FXML private HBox hbxGamePads;
-    @FXML private VBox vbxRight;
+    @FXML private HBox hbxGamePadPanels;
 
     // dyn4j world
     World<Body> world = new World<>();
@@ -94,12 +93,20 @@ public class VirtualRobotController {
     Gamepad gamePad1 = new Gamepad();
     Gamepad gamePad2 = new Gamepad();
     GamePadHelper gamePadHelper = null;
+    /**
+     * What drives each virtual gamepad. Written on the FX thread, read by the gamepad polling
+     * thread.
+     */
+    private volatile GamePadSource gamePad1Source = GamePadSource.VIRTUAL;
+    private volatile GamePadSource gamePad2Source = GamePadSource.HIDDEN;
     ScheduledExecutorService gamePadExecutorService = Executors.newSingleThreadScheduledExecutor();
 
     VirtualGamePadController virtualGamePadController = null;
     VirtualGamePadController virtualGamePad2Controller = null;
     // The gamepad 2 panel; kept out of the layout until the user asks for it.
     HBox virtualGamePad2Box = null;
+    // Divides the two panels, which are otherwise identical clusters butted together.
+    Separator gamePadSeparator = null;
 
     //Background Image and Field
     private final Image backgroundImage = Config.BACKGROUND;
@@ -190,44 +197,39 @@ public class VirtualRobotController {
         sldSystematicMotorError.valueProperty().addListener(sliderChangeListener);
         sldMotorInertia.valueProperty().addListener(sliderChangeListener);
 
-        if (Config.USE_VIRTUAL_GAMEPAD){
-            vbxRight.getChildren().remove(hbxGamePads);
-//            checkBoxGamePad1.setVisible(false);
-//            checkBoxGamePad2.setVisible(false);
-            try{
-                FXMLLoader loader1 = new FXMLLoader(getClass().getResource("virtual_gamepad.fxml"));
-                HBox hbox1 = (HBox)loader1.load();
-                virtualGamePadController = loader1.getController();
-                virtualGamePadController.setVirtualRobotController(this);
+        try{
+            FXMLLoader loader1 = new FXMLLoader(getClass().getResource("virtual_gamepad.fxml"));
+            HBox hbox1 = (HBox)loader1.load();
+            virtualGamePadController = loader1.getController();
+            virtualGamePadController.setVirtualRobotController(this);
 
-                /*
-                 * A second gamepad, for op modes that use gamepad2. It is loaded up front but
-                 * left out of the layout: most op modes only need gamepad1, and an unused
-                 * second panel takes up screen space. The "Show gamepad 2" checkbox adds it.
-                 */
-                FXMLLoader loader2 = new FXMLLoader(getClass().getResource("virtual_gamepad.fxml"));
-                virtualGamePad2Box = (HBox)loader2.load();
-                virtualGamePad2Controller = loader2.getController();
-                virtualGamePad2Controller.setVirtualRobotController(this);
-                virtualGamePad2Box.setVisible(false);
-                virtualGamePad2Box.setManaged(false);
+            /*
+             * A second gamepad, for op modes that use gamepad2. It is loaded up front but
+             * left out of the layout: most op modes only need gamepad1, and an unused
+             * second panel takes up screen space. Its source selector adds it.
+             */
+            FXMLLoader loader2 = new FXMLLoader(getClass().getResource("virtual_gamepad.fxml"));
+            virtualGamePad2Box = (HBox)loader2.load();
+            virtualGamePad2Controller = loader2.getController();
+            virtualGamePad2Controller.setVirtualRobotController(this);
+            virtualGamePad2Box.setVisible(false);
+            virtualGamePad2Box.setManaged(false);
 
-                VBox gamePads = new VBox(hbox1, virtualGamePad2Box);
-                borderPane.setBottom(gamePads);
-            } catch (IOException e){
-                System.out.println("Virtual GamePad UI Failed to Load");
-            }
-            gamePadHelper = new VirtualGamePadHelper();
-        } else {
-            checkBoxGamePad1.setDisable(true);
-            checkBoxGamePad1.setStyle("-fx-opacity: 1");
-            checkBoxGamePad2.setDisable(true);
-            checkBoxGamePad2.setStyle("-fx-opacity: 1");
-            // Real gamepads are plugged in, so there is no panel to show or hide.
-            cbxShowGamePad2.setVisible(false);
-            cbxShowGamePad2.setManaged(false);
-            gamePadHelper = new RealGamePadHelper();
+            gamePadSeparator = new Separator(Orientation.VERTICAL);
+            gamePadSeparator.setMaxHeight(Double.MAX_VALUE);
+            gamePadSeparator.setVisible(false);
+            gamePadSeparator.setManaged(false);
+
+            hbxGamePadPanels.getChildren().addAll(hbox1, gamePadSeparator, virtualGamePad2Box);
+        } catch (IOException e){
+            System.out.println("Virtual GamePad UI Failed to Load");
         }
+
+        // Only the panels themselves to begin with; physical gamepads join as they are found.
+        refreshGamePadSourceItems(false, false);
+        setGamePadSource(cbxGamePad2Source, GamePadSource.HIDDEN);
+
+        gamePadHelper = new GamePadHelper();
         gamePadExecutorService.scheduleAtFixedRate(gamePadHelper, 0, 20, TimeUnit.MILLISECONDS);
     }
 
@@ -768,15 +770,19 @@ public class VirtualRobotController {
     }
 
     /**
-     * Show or hide the second virtual gamepad. While it is hidden, gamepad2 reports
-     * nothing pressed, so hiding it cannot leave a stale button held down.
+     * Show or hide the second virtual gamepad, following its source selector. While it is
+     * hidden, gamepad2 reports nothing pressed, so hiding it cannot leave a stale button held
+     * down.
      */
-    @FXML
-    private void handleCbxShowGamePad2Action(ActionEvent event){
+    private void setGamePad2PanelVisible(boolean show){
         if (virtualGamePad2Box == null) return;
-        boolean show = cbxShowGamePad2.isSelected();
+        if (virtualGamePad2Box.isVisible() == show) return;
         virtualGamePad2Box.setVisible(show);
         virtualGamePad2Box.setManaged(show);
+        if (gamePadSeparator != null) {
+            gamePadSeparator.setVisible(show);
+            gamePadSeparator.setManaged(show);
+        }
         if (!show && virtualGamePad2Controller != null) virtualGamePad2Controller.resetGamePad();
         /*
          * The window is not resizable and was sized to its contents when it opened, so it
@@ -785,6 +791,100 @@ public class VirtualRobotController {
          */
         Window window = borderPane.getScene() == null ? null : borderPane.getScene().getWindow();
         if (window instanceof Stage) ((Stage)window).sizeToScene();
+    }
+
+    /**
+     * What drives a virtual gamepad: its own on-screen panel under the mouse, or one of the
+     * physical gamepads. Either way the op mode reads the panel - a physical gamepad works by
+     * moving that panel's controls.
+     *
+     * HIDDEN is offered for gamepad2 only. Most op modes use gamepad1 alone, and a second panel
+     * always on screen costs space; while hidden, gamepad2 reports nothing pressed.
+     */
+    public enum GamePadSource {
+        HIDDEN("Hide", -1),
+        VIRTUAL("Virtual gamepad", -1),
+        PHYSICAL_A("Physical gamepad A", 0),
+        PHYSICAL_B("Physical gamepad B", 1);
+
+        private final String label;
+        /** The physical gamepad this names, as an index into the jamepad slots, or -1 for none. */
+        final int slot;
+
+        GamePadSource(String label, int slot){ this.label = label; this.slot = slot; }
+
+        static GamePadSource forSlot(int slot){ return slot == 0? PHYSICAL_A : PHYSICAL_B; }
+
+        @Override
+        public String toString(){ return label; }
+    }
+
+    // Guards against the selection changes made below re-entering the handler.
+    private boolean updatingGamePadSource = false;
+
+    @FXML
+    private void handleGamePadSourceSelection(ActionEvent event){
+        if (updatingGamePadSource) return;
+        ComboBox<GamePadSource> cbx = event.getSource() == cbxGamePad1Source? cbxGamePad1Source : cbxGamePad2Source;
+        setGamePadSource(cbx, cbx.getValue());
+    }
+
+    /**
+     * Choose what drives one of the virtual gamepads. A physical gamepad can only drive one of
+     * them, so claiming it hands the other back to its own panel.
+     *
+     * Must run on the FX thread. Both ways of choosing - the dropdown and the Start+A / Start+B
+     * gesture on the gamepad itself - come through here, so they cannot disagree.
+     */
+    private void setGamePadSource(ComboBox<GamePadSource> cbx, GamePadSource source){
+        if (source == null) return;
+        ComboBox<GamePadSource> other = cbx == cbxGamePad1Source? cbxGamePad2Source : cbxGamePad1Source;
+
+        updatingGamePadSource = true;
+        cbx.getSelectionModel().select(source);
+        // Only a physical gamepad is exclusive; both panels can be virtual, and Hide is gamepad2's alone.
+        if (source.slot >= 0 && other.getValue() == source) {
+            other.getSelectionModel().select(GamePadSource.VIRTUAL);
+        }
+        updatingGamePadSource = false;
+
+        gamePad1Source = cbxGamePad1Source.getValue();
+        gamePad2Source = cbxGamePad2Source.getValue();
+
+        // Gamepad 2's panel is on screen unless its selector says to hide it.
+        if (cbx == cbxGamePad2Source) setGamePad2PanelVisible(source != GamePadSource.HIDDEN);
+    }
+
+    /**
+     * Offer only the sources that exist: a gamepad's own panel always, Hide for gamepad2, and
+     * each physical gamepad while it is plugged in. A selection whose gamepad has just been
+     * unplugged falls back to the panel, which leaves it on screen under the mouse rather than
+     * yanking it out of the window. Must run on the FX thread.
+     */
+    private void refreshGamePadSourceItems(boolean aConnected, boolean bConnected){
+        updatingGamePadSource = true;
+        selectFrom(cbxGamePad1Source, availableGamePadSources(false, aConnected, bConnected));
+        selectFrom(cbxGamePad2Source, availableGamePadSources(true, aConnected, bConnected));
+        updatingGamePadSource = false;
+
+        gamePad1Source = cbxGamePad1Source.getValue();
+        gamePad2Source = cbxGamePad2Source.getValue();
+    }
+
+    private static ObservableList<GamePadSource> availableGamePadSources(
+            boolean canHide, boolean aConnected, boolean bConnected){
+        ObservableList<GamePadSource> available = FXCollections.observableArrayList();
+        if (canHide) available.add(GamePadSource.HIDDEN);
+        available.add(GamePadSource.VIRTUAL);
+        if (aConnected) available.add(GamePadSource.PHYSICAL_A);
+        if (bConnected) available.add(GamePadSource.PHYSICAL_B);
+        return available;
+    }
+
+    private static void selectFrom(ComboBox<GamePadSource> cbx, ObservableList<GamePadSource> available){
+        GamePadSource current = cbx.getValue();
+        cbx.setItems(available);
+        cbx.getSelectionModel().select(available.contains(current)? current : GamePadSource.VIRTUAL);
     }
 
     public void updateTelemetryDisplay(String telemetryText) {
@@ -1062,138 +1162,169 @@ public class VirtualRobotController {
     }
 
 
-    public interface GamePadHelper extends Runnable{
-        public void quit();
-        public void onOpModeFinished();
-    }
+    /**
+     * Polls the physical gamepads, if any, into the virtual gamepad panels, then reads the panels into
+     * gamepad1 and gamepad2.
+     *
+     * The panels are the only thing an op mode ever sees. A physical gamepad driving a panel moves
+     * that panel's controls, and what the op mode reads is the panel - so real input is not just
+     * feedback on screen, it is the input.
+     */
+    public class GamePadHelper implements Runnable {
 
-    public class VirtualGamePadHelper implements GamePadHelper {
+        // Null if SDL could not be initialized; the panels are then mouse-only.
+        private ControllerManager controllerManager = null;
 
-        public void run() {
-            VirtualGamePadController.ControllerState state = virtualGamePadController.getState();
-            gamePad1.update(state);
-            virtualGamePadController.setOutputs(gamePad1);
+        private final boolean[] isConnected = { false, false };
 
-            // gamepad2 only reports input while its panel is showing.
-            if (virtualGamePad2Controller != null && cbxShowGamePad2.isSelected()) {
-                gamePad2.update(virtualGamePad2Controller.getState());
-                virtualGamePad2Controller.setOutputs(gamePad2);
-            } else {
-                gamePad2.resetValues();
+        private final Thread[] rumbleThreads = new Thread[2];
+
+        // True while an assignment gesture is still being held, so it assigns once per press.
+        private boolean assigning = false;
+
+        public GamePadHelper(){
+            try {
+                ControllerManager manager = new ControllerManager(2);
+                manager.initSDLGamepad();
+                controllerManager = manager;
+            } catch (Throwable t) {
+                /*
+                 * initSDLGamepad throws IllegalStateException, and loading the native library can
+                 * fail outright. Neither is fatal: without physical gamepads the panels still work
+                 * under the mouse, so just say so and carry on.
+                 */
+                System.out.println("Physical gamepads unavailable (" + t + "). Virtual gamepads only.");
             }
-        }
-
-        public void quit(){
-            //Make sure that LED and Rumble threads are interrupted if user closes the application while an op mode is
-            //running.
-            virtualGamePadController.interruptLEDandRumbleThreads();
-            if (virtualGamePad2Controller != null) virtualGamePad2Controller.interruptLEDandRumbleThreads();
-        }
-
-        public void onOpModeFinished(){
-            virtualGamePadController.resetGamePad();
-            if (virtualGamePad2Controller != null) virtualGamePad2Controller.resetGamePad();
-        }
-    }
-
-    public class RealGamePadHelper implements  GamePadHelper {
-
-        private int gamePad1Index = -1;
-        private int gamePad2Index = -1;
-
-        private boolean isConnected0 = true;
-        private boolean isConnected1 = true;
-
-        private boolean changingGamePadConfig = false;
-
-        private ControllerManager controller = null;
-
-        private Thread[] rumbleThreads = new Thread[2];
-
-        public RealGamePadHelper(){
-            controller = new ControllerManager(2);
-            controller.initSDLGamepad();
         }
 
         public void run(){
-            boolean connectionChanged = false;
-            boolean configChanged = false;
+            if (virtualGamePadController == null) return;
 
-            ControllerState state0 = controller.getState(0);
-            ControllerState state1 = controller.getState(1);
-
-            if (state0.isConnected != isConnected0 || state1.isConnected != isConnected1){
-                isConnected0 = state0.isConnected;
-                isConnected1 = state1.isConnected;
-                connectionChanged = true;
-                System.out.println("isConnected0 = " + isConnected0 + "  isConnected1 = " + isConnected1);
+            ControllerState[] states = null;
+            if (controllerManager != null) {
+                states = new ControllerState[]{ controllerManager.getState(0), controllerManager.getState(1) };
+                updateConnectionState(states);
+                checkAssignmentGesture(states);
             }
 
-            if (state0.start && (state0.a || state0.b) || state1.start && (state1.a || state1.b)) {
-                if (!changingGamePadConfig) {
+            int slot1 = slotDriving(gamePad1Source, states);
+            int slot2 = slotDriving(gamePad2Source, states);
 
-                    changingGamePadConfig = true;
+            applyToPanel(virtualGamePadController, slot1, states);
+            applyToPanel(virtualGamePad2Controller, slot2, states);
 
-                    if (state0.start && state0.a) {
-                        gamePad1Index = 0;
-                        if (gamePad2Index == 0) gamePad2Index = -1;
-                    } else if (state0.start && state0.b) {
-                        gamePad2Index = 0;
-                        if (gamePad1Index == 0) gamePad1Index = -1;
-                    }
+            gamePad1.update(virtualGamePadController.getState());
 
-                    if (state1.start && state1.a) {
-                        gamePad1Index = 1;
-                        if (gamePad2Index == 1) gamePad2Index = -1;
-                    } else if (state1.start && state1.b) {
-                        gamePad2Index = 1;
-                        if (gamePad1Index == 1) gamePad1Index = -1;
-                    }
-
-                    System.out.println("gamepad1 index = " + gamePad1Index + "   gamepad2 index = " + gamePad2Index);
-
-                    configChanged = true;
-                }
+            // gamepad2 only reports input while its panel is showing.
+            if (virtualGamePad2Controller != null && gamePad2Source != GamePadSource.HIDDEN) {
+                gamePad2.update(virtualGamePad2Controller.getState());
             } else {
-                changingGamePadConfig = false;
+                gamePad2.resetValues();
             }
 
-            if (configChanged || connectionChanged){
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        checkBoxGamePad1.setSelected(gamePad1Index == 0 && isConnected0 || gamePad1Index == 1 && isConnected1);
-                        checkBoxGamePad2.setSelected(gamePad2Index == 0 && isConnected0 || gamePad2Index == 1 && isConnected1);
-                    }
-                });
-            }
-
-
-            if (gamePad1Index == 0) gamePad1.update(state0);
-            else if (gamePad1Index == 1) gamePad1.update(state1);
-            else gamePad1.resetValues();
-
-            if (gamePad2Index == 0) gamePad2.update(state0);
-            else if (gamePad2Index == 1) gamePad2.update(state1);
-            else gamePad2.resetValues();
-
-            setOutputs(gamePad1, gamePad1Index);
-            setOutputs(gamePad2, gamePad2Index);
+            setOutputs(gamePad1, virtualGamePadController, slot1);
+            setOutputs(gamePad2, virtualGamePad2Controller, slot2);
         }
 
-        public void setOutputs(Gamepad gamepad, final int gamePadIndex){
-            if (gamePadIndex <0 || gamePadIndex >1) return;
-            ControllerIndex controllerIndex = controller.getControllerIndex(gamePadIndex);
+        /**
+         * The jamepad slot behind the given source, or -1 when the panel is its own source (or the
+         * physical gamepad it names has gone away).
+         */
+        private int slotDriving(GamePadSource source, ControllerState[] states){
+            if (states == null || source == null || source.slot < 0) return -1;
+            return states[source.slot].isConnected? source.slot : -1;
+        }
+
+        private void applyToPanel(VirtualGamePadController panel, int slot, ControllerState[] states){
+            if (panel == null) return;
+            panel.setPhysicalGamePadAttached(slot >= 0);
+            if (slot >= 0) panel.applyPhysicalState(states[slot]);
+        }
+
+        /**
+         * Start+A on a physical gamepad hands it gamepad1 and Start+B hands it gamepad2, the
+         * same gesture the Driver Station uses, so a driver can claim a gamepad without reaching
+         * for the mouse. Edge triggered: holding the combination assigns once.
+         */
+        private void checkAssignmentGesture(ControllerState[] states){
+            boolean held = false;
+            for (int i = 0; i < 2; i++) {
+                if (states[i].isConnected && states[i].start && (states[i].a || states[i].b)) held = true;
+            }
+            if (!held) {
+                assigning = false;
+                return;
+            }
+            if (assigning) return;
+            assigning = true;
+
+            for (int i = 0; i < 2; i++) {
+                if (!states[i].isConnected || !states[i].start) continue;
+                if (states[i].a) assignLater(cbxGamePad1Source, GamePadSource.forSlot(i));
+                else if (states[i].b) assignLater(cbxGamePad2Source, GamePadSource.forSlot(i));
+            }
+        }
+
+        private void assignLater(final ComboBox<GamePadSource> cbx, final GamePadSource source){
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    setGamePadSource(cbx, source);
+                }
+            });
+        }
+
+        /**
+         * A physical gamepad can only be chosen while it is plugged in, so the selectors follow
+         * the hardware: a gamepad is offered when it appears and withdrawn when it goes away.
+         */
+        private void updateConnectionState(ControllerState[] states){
+            boolean changed = false;
+            for (int i = 0; i < 2; i++) {
+                if (states[i].isConnected != isConnected[i]) {
+                    isConnected[i] = states[i].isConnected;
+                    changed = true;
+                }
+            }
+            if (!changed) return;
+
+            System.out.println("Physical gamepads connected: A = " + isConnected[0] + ", B = " + isConnected[1]);
+
+            final boolean aConnected = isConnected[0];
+            final boolean bConnected = isConnected[1];
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    refreshGamePadSourceItems(aConnected, bConnected);
+                }
+            });
+        }
+
+        /**
+         * Deliver an op mode's LED and rumble effects. The queues are drained here, once, so that
+         * both the panel and a physical gamepad driving it get the same effect.
+         */
+        private void setOutputs(Gamepad gamepad, VirtualGamePadController panel, int slot){
+            Gamepad.LedEffect leds = gamepad.ledQueue.poll();
             Gamepad.RumbleEffect rumbles = gamepad.rumbleQueue.poll();
-            if (rumbles == null) return;
-            if (rumbleThreads[gamePadIndex] != null){
-                rumbleThreads[gamePadIndex].interrupt();
+            if (panel != null) {
+                panel.applyLedEffect(leds);
+                panel.applyRumbleEffect(rumbles);
+            }
+            // A physical gamepad has no LEDs to speak of here, but it can rumble for real.
+            if (rumbles != null && slot >= 0 && controllerManager != null) startRumble(slot, rumbles);
+        }
+
+        private void startRumble(final int slot, Gamepad.RumbleEffect rumbles){
+            final ControllerIndex controllerIndex = controllerManager.getControllerIndex(slot);
+            if (rumbleThreads[slot] != null){
+                rumbleThreads[slot].interrupt();
             }
 
             // Make this final so accessable from rumble thread
             final ListIterator<Gamepad.RumbleEffect.Step> stepIterator = rumbles.steps.listIterator();
 
-            rumbleThreads[gamePadIndex] = new Thread(new Runnable() {
+            rumbleThreads[slot] = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     while (stepIterator.hasNext()) {
@@ -1225,25 +1356,29 @@ public class VirtualRobotController {
                 }
             });
 
-            rumbleThreads[gamePadIndex].start();
+            rumbleThreads[slot].start();
         }
 
-
+        /**
+         * Make sure that LED and Rumble threads are interrupted if the user closes the application
+         * while an op mode is running.
+         */
         public void quit(){
+            if (virtualGamePadController != null) virtualGamePadController.interruptLEDandRumbleThreads();
+            if (virtualGamePad2Controller != null) virtualGamePad2Controller.interruptLEDandRumbleThreads();
             interruptRumbleThreads();
-            controller.quitSDLGamepad();
+            if (controllerManager != null) controllerManager.quitSDLGamepad();
         }
 
         public void onOpModeFinished(){
+            if (virtualGamePadController != null) virtualGamePadController.resetGamePad();
+            if (virtualGamePad2Controller != null) virtualGamePad2Controller.resetGamePad();
             interruptRumbleThreads();
         }
 
-        public void interruptRumbleThreads(){
-            if (rumbleThreads[0] != null){
-                rumbleThreads[0].interrupt();
-            }
-            if (rumbleThreads[1] != null){
-                rumbleThreads[1].interrupt();
+        private void interruptRumbleThreads(){
+            for (int i = 0; i < rumbleThreads.length; i++) {
+                if (rumbleThreads[i] != null) rumbleThreads[i].interrupt();
             }
         }
 

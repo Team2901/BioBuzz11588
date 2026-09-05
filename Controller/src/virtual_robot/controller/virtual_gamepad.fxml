@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -25,7 +26,7 @@
                     onMousePressed="#handleGamePadButtonMouseEvent"
                     onMouseReleased="#handleGamePadButtonMouseEvent" text="LB">
                     <VBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                        <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
                     </VBox.margin>
                     <font>
                         <Font size="14.0" />
@@ -33,45 +34,52 @@
             </Button>
             <Slider fx:id="sldLeft" blockIncrement="0.001" majorTickUnit="0.001" max="1.0" maxHeight="75.0" onMousePressed="#handleTriggerMouseEvent" onMouseReleased="#handleTriggerMouseEvent" orientation="VERTICAL">
                <VBox.margin>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                  <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
                </VBox.margin>
             </Slider>
+            <Label fx:id="lblLeftTrigger" text="0.00">
+               <font>
+                  <Font size="10.0" />
+               </font>
+            </Label>
          </children>
       </VBox>
         <GridPane alignment="CENTER">
             <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="40.0" />
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="40.0" />
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="40.0" />
+                <ColumnConstraints hgrow="NEVER" minWidth="10.0" prefWidth="29.0" />
+                <ColumnConstraints hgrow="NEVER" minWidth="10.0" prefWidth="29.0" />
+                <ColumnConstraints hgrow="NEVER" minWidth="10.0" prefWidth="29.0" />
             </columnConstraints>
             <rowConstraints>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="29.0" vgrow="NEVER" />
+                <RowConstraints minHeight="10.0" prefHeight="29.0" vgrow="NEVER" />
+                <RowConstraints minHeight="10.0" prefHeight="29.0" vgrow="NEVER" />
             </rowConstraints>
          <HBox.margin>
-            <Insets bottom="5.0" left="20.0" right="20.0" top="5.0" />
+            <Insets bottom="3.0" left="8.0" right="8.0" top="3.0" />
          </HBox.margin>
          <children>
-            <Button fx:id="btnDU" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onMouseExited="#handleGamePadButtonMouseEvent" onMousePressed="#handleGamePadButtonMouseEvent" onMouseReleased="#handleGamePadButtonMouseEvent" text="U" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+            <Button fx:id="btnDU" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onMouseExited="#handleGamePadButtonMouseEvent" onMousePressed="#handleGamePadButtonMouseEvent" onMouseReleased="#handleGamePadButtonMouseEvent" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
                <font>
                   <Font size="14.0" />
                </font></Button>
-            <Button fx:id="btnDL" mnemonicParsing="false" onMouseExited="#handleGamePadButtonMouseEvent" onMousePressed="#handleGamePadButtonMouseEvent" onMouseReleased="#handleGamePadButtonMouseEvent" text="L" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+            <Button fx:id="btnDL" mnemonicParsing="false" onMouseExited="#handleGamePadButtonMouseEvent" onMousePressed="#handleGamePadButtonMouseEvent" onMouseReleased="#handleGamePadButtonMouseEvent" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
                <font>
                   <Font size="14.0" />
                </font></Button>
-            <Button fx:id="btnDR" mnemonicParsing="false" onMouseExited="#handleGamePadButtonMouseEvent" onMousePressed="#handleGamePadButtonMouseEvent" onMouseReleased="#handleGamePadButtonMouseEvent" text="R" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+            <Button fx:id="btnDR" mnemonicParsing="false" onMouseExited="#handleGamePadButtonMouseEvent" onMousePressed="#handleGamePadButtonMouseEvent" onMouseReleased="#handleGamePadButtonMouseEvent" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
                <font>
                   <Font size="14.0" />
                </font></Button>
-            <Button fx:id="btnDD" mnemonicParsing="false" onMouseExited="#handleGamePadButtonMouseEvent" onMousePressed="#handleGamePadButtonMouseEvent" onMouseReleased="#handleGamePadButtonMouseEvent" text="D" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
+            <Button fx:id="btnDD" mnemonicParsing="false" onMouseExited="#handleGamePadButtonMouseEvent" onMousePressed="#handleGamePadButtonMouseEvent" onMouseReleased="#handleGamePadButtonMouseEvent" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
                <font>
                   <Font size="14.0" />
                </font></Button>
          </children>
         </GridPane>
 
+        <VBox alignment="CENTER">
+            <children>
         <StackPane fx:id="joyStickLeftPane" alignment="TOP_LEFT" maxHeight="120.0" maxWidth="120.0" minHeight="120.0" minWidth="120.0" onMouseDragged="#handleJoystickMouseEvent" onMouseExited="#handleJoystickMouseEvent" onMousePressed="#handleJoystickMouseEvent" onMouseReleased="#handleJoystickMouseEvent" prefHeight="120.0" prefWidth="120.0">
             <children>
                 <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#404040" height="120.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="4.0" width="120.0">
@@ -83,10 +91,20 @@
                 <Line endX="120.0" endY="60.0" startY="60.0" stroke="LIME" StackPane.alignment="CENTER" />
                 <Circle fx:id="joyStickLeftHandle" fill="RED" radius="10.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" translateX="50.0" translateY="50.0" />
             </children>
-            <HBox.margin>
-                <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
-            </HBox.margin>
         </StackPane>
+                <Label fx:id="lblLeftStick" text="x 0.00  y 0.00&#10;mag 0.00  0.00&#176;" textAlignment="CENTER">
+                    <font>
+                        <Font size="10.0" />
+                    </font>
+                    <VBox.margin>
+                        <Insets top="2.0" />
+                    </VBox.margin>
+                </Label>
+            </children>
+            <HBox.margin>
+                <Insets bottom="3.0" left="6.0" right="6.0" top="3.0" />
+            </HBox.margin>
+        </VBox>
 
         <VBox alignment="CENTER">
             <children>
@@ -95,7 +113,7 @@
                         <Font size="11.0" />
                     </font>
                     <VBox.margin>
-                        <Insets bottom="4.0" left="2.0" right="2.0" top="4.0" />
+                        <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
                     </VBox.margin>
                 </Button>
                 <Button fx:id="btnStart" mnemonicParsing="false" onMouseExited="#handleGamePadButtonMouseEvent" onMousePressed="#handleGamePadButtonMouseEvent" onMouseReleased="#handleGamePadButtonMouseEvent" text="Start">
@@ -103,15 +121,17 @@
                         <Font size="11.0" />
                     </font>
                     <VBox.margin>
-                        <Insets bottom="4.0" left="2.0" right="2.0" top="4.0" />
+                        <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
                     </VBox.margin>
                 </Button>
             </children>
             <HBox.margin>
-                <Insets bottom="5.0" left="2.0" right="2.0" top="5.0" />
+                <Insets bottom="3.0" left="2.0" right="2.0" top="3.0" />
             </HBox.margin>
         </VBox>
 
+        <VBox alignment="CENTER">
+            <children>
         <StackPane fx:id="joyStickRightPane" alignment="TOP_LEFT" maxHeight="120.0" maxWidth="120.0" minHeight="120.0" minWidth="120.0" onMouseDragged="#handleJoystickMouseEvent" onMouseExited="#handleJoystickMouseEvent" onMousePressed="#handleJoystickMouseEvent" onMouseReleased="#handleJoystickMouseEvent" prefHeight="120.0" prefWidth="120.0">
             <children>
                 <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#404040" height="120.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="4.0" width="120.0" />
@@ -119,21 +139,31 @@
                 <Line endX="120.0" endY="60.0" startY="60.0" stroke="RED" StackPane.alignment="CENTER" />
                 <Circle fx:id="joyStickRightHandle" fill="LIME" radius="10.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" translateX="50.0" translateY="50.0" />
             </children>
-            <HBox.margin>
-                <Insets bottom="5.0" top="5.0" />
-            </HBox.margin>
         </StackPane>
+                <Label fx:id="lblRightStick" text="x 0.00  y 0.00&#10;mag 0.00  0.00&#176;" textAlignment="CENTER">
+                    <font>
+                        <Font size="10.0" />
+                    </font>
+                    <VBox.margin>
+                        <Insets top="2.0" />
+                    </VBox.margin>
+                </Label>
+            </children>
+            <HBox.margin>
+                <Insets bottom="3.0" top="3.0" />
+            </HBox.margin>
+        </VBox>
 
         <GridPane alignment="CENTER">
             <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="40.0" />
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="40.0" />
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="40.0" />
+                <ColumnConstraints hgrow="NEVER" minWidth="10.0" prefWidth="29.0" />
+                <ColumnConstraints hgrow="NEVER" minWidth="10.0" prefWidth="29.0" />
+                <ColumnConstraints hgrow="NEVER" minWidth="10.0" prefWidth="29.0" />
             </columnConstraints>
             <rowConstraints>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="29.0" vgrow="NEVER" />
+                <RowConstraints minHeight="10.0" prefHeight="29.0" vgrow="NEVER" />
+                <RowConstraints minHeight="10.0" prefHeight="29.0" vgrow="NEVER" />
             </rowConstraints>
             <children>
                 <Button fx:id="btnX" alignment="CENTER" mnemonicParsing="false" onMouseExited="#handleGamePadButtonMouseEvent" onMousePressed="#handleGamePadButtonMouseEvent" onMouseReleased="#handleGamePadButtonMouseEvent" text="X" GridPane.halignment="CENTER" GridPane.rowIndex="1">
@@ -158,7 +188,7 @@
                 </Button>
             </children>
             <HBox.margin>
-                <Insets bottom="5.0" left="20.0" right="20.0" top="5.0" />
+                <Insets bottom="3.0" left="8.0" right="8.0" top="3.0" />
             </HBox.margin>
         </GridPane>
       <VBox alignment="CENTER">
@@ -168,14 +198,19 @@
                   <Font size="14.0" />
                </font>
                <VBox.margin>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                  <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
                </VBox.margin>
             </Button>
             <Slider fx:id="sldRight" blockIncrement="0.001" majorTickUnit="0.001" max="1.0" maxHeight="75.0" onMousePressed="#handleTriggerMouseEvent" onMouseReleased="#handleTriggerMouseEvent" orientation="VERTICAL">
                <VBox.margin>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                  <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
                </VBox.margin>
             </Slider>
+            <Label fx:id="lblRightTrigger" text="0.00">
+               <font>
+                  <Font size="10.0" />
+               </font>
+            </Label>
          </children>
       </VBox>
     </children>

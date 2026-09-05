@@ -76,15 +76,46 @@ the pattern, and copy the real SDK's own implementation where you can.
 ## The virtual gamepad
 
 The panel along the bottom stands in for a driver station gamepad: sticks, D-pad, ABXY,
-bumpers, triggers, and Back/Start. Its buttons are inert until you press INIT — the same
-is true of a real gamepad, whose input an OpMode only sees once it is running.
+bumpers, triggers, and Back/Start. Clicking its controls does nothing until you press
+INIT, since an OpMode only sees gamepad input once it is running.
 
-A **second gamepad** for OpModes that read `gamepad2` is hidden by default and shown by
-the "Show gamepad 2" checkbox; most OpModes only use `gamepad1`, and a second panel
-always on screen costs space. While hidden, `gamepad2` reports nothing pressed.
+Drag a stick with the left mouse button. **Right-click a stick** to press its stick button
+(`left_stick_button` / `right_stick_button`) — the handle is ringed in black while it is
+held, and you can right-hold and left-drag the same stick at once.
 
-Real USB gamepads can be used instead by setting `USE_VIRTUAL_GAMEPAD` to false in
-`src/virtual_robot/config/Config.java`.
+Controls spring back when you let go of them. Hold **SHIFT** (or ALT) and they stay put
+instead: a stick keeps its position, a trigger its value, and a button latches down until
+you click it again. `HOLD_CONTROLS_BY_DEFAULT` in `Config.java` swaps which of the two is
+the default, and SHIFT then gives you the other.
+
+A **second gamepad** for OpModes that read `gamepad2` is hidden by default: its selector
+starts on `Hide`, and picking anything else puts the panel on screen. Most OpModes only
+use `gamepad1`, and a second panel always on screen costs space. While hidden, `gamepad2`
+reports nothing pressed.
+
+### Physical USB gamepads
+
+A physical gamepad drives a panel rather than replacing it. The **Gamepad 1** and
+**Gamepad 2** dropdowns on the right choose what drives each one: `Virtual gamepad`
+(the panel itself, under the mouse), `Physical gamepad A` or `Physical gamepad B` — plus
+`Hide` on gamepad 2, which takes its panel off screen entirely. A physical gamepad is
+only offered while it is plugged in, and a selection whose gamepad is unplugged falls
+back to `Virtual gamepad`. One physical gamepad cannot drive both, so claiming it hands
+the other back to its own panel.
+
+You can also claim a gamepad from the hardware itself, without reaching for the mouse:
+**Start+A** hands that controller to `Gamepad 1` and **Start+B** hands it to `Gamepad 2`,
+the same gesture the Driver Station uses. The dropdown follows along.
+
+While a physical gamepad drives a panel, the panel's controls follow the hardware — the
+stick handles move, the triggers slide, the buttons light up — and the panel is what the
+OpMode reads, so what you see is genuinely the input. That panel ignores the mouse for as
+long as the gamepad is driving it; giving `Gamepad 2` anything but `Hide` puts its panel
+on screen. `gamepad.rumble(...)` vibrates the physical gamepad as well as tinting the
+trigger sliders.
+
+If SDL cannot start — no gamepad support on the machine — the simulator says so on the
+console, offers `Virtual gamepad` only, and runs mouse-only.
 
 ## Excluding an OpMode from the simulator
 
@@ -175,9 +206,10 @@ carries a motor, servo, potentiometer, touch sensor and colour-distance sensor.
 
 ## Settings
 
-`src/virtual_robot/config/Config.java` holds the run-time options — virtual versus real
-gamepads (`USE_VIRTUAL_GAMEPAD`), field size and image, and the game (currently Decode;
-`new NoGame()` removes the field obstacles).
+`src/virtual_robot/config/Config.java` holds the run-time options — field size and image,
+whether the gamepad controls hold their position when released
+(`HOLD_CONTROLS_BY_DEFAULT`), and the game (currently Decode; `new NoGame()` removes the
+field obstacles).
 
 The sliders beside the field inject random and systematic motor error and motor inertia,
 which is useful for checking that an autonomous routine is not relying on perfectly
