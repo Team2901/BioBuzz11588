@@ -5,22 +5,26 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.CRServo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.robotcore.internal.camera.delegating.DelegatingCaptureSequence;
 import org.firstinspires.ftc.teamcode.hardware.Hardware;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-@TeleOp(name = "QualTeleopV4")
+@TeleOp(name = "QualTeleopV1")
 public class QualTeleop extends OpMode {
     Hardware robot = new Hardware();
     private Limelight3A limelight3A;
     boolean reversed = false;
     double turningPower;
     double intakePower = 0;
+    boolean intakeServoOn = false;
 
     //telemetry
     public void help() {
@@ -60,6 +64,7 @@ public class QualTeleop extends OpMode {
         double y = robot.speed * joyStickMagnitude*Math.sin(moveAngle);
         double x = robot.speed * joyStickMagnitude*Math.cos(moveAngle);
 
+
         YawPitchRollAngles orientation = robot.getOrientation();
 
         if(limelight3A != null) limelight3A.updateRobotOrientation(orientation.getYaw(AngleUnit.DEGREES));
@@ -85,6 +90,17 @@ public class QualTeleop extends OpMode {
             }
             reversed = !reversed;
         }
+
+        if (gamepad1.aWasPressed()) {
+            intakeServoOn = !intakeServoOn;
+
+            if(intakeServoOn) {
+                robot.intakeServo.setPower(1);
+            } else {
+                robot.intakeServo.setPower(0);
+            }
+        }
+
         robot.intake.setPower(intakePower);
         if (gamepad1.aWasPressed()) {
             if (intakePower == 1){
@@ -93,6 +109,7 @@ public class QualTeleop extends OpMode {
                 intakePower = 1;
             }
         }
+
         if (gamepad1.xWasPressed())
             limelight3A.start();
 

@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.bylazar.telemetry.PanelsTelemetry;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -23,6 +24,7 @@ public class Hardware {
     public DcMotorEx frontRight;
     public DcMotorEx backRight;
     public DcMotorEx intake;
+    public CRServo intakeServo;
     Limelight3A limelight3A;
     //RevHub orientation necessary for an usage of IMU
     RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection;
@@ -88,6 +90,8 @@ public class Hardware {
             intake = new MockDcMotor();
             telemetry.addLine("Can't find intake: making a mock");
         }
+        
+        intakeServo = hardwareMap.get(CRServo.class, "intakeServo");
 
         frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
