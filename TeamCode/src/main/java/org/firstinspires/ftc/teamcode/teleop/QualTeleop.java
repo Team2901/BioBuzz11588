@@ -89,8 +89,14 @@ public class QualTeleop extends OpMode {
             reversed = !reversed;
         }
 
+        robot.intake.setPower(intakePower);
         if (gamepad1.aWasPressed()) {
             intakeServoOn = !intakeServoOn;
+            if (intakePower == 1){
+                intakePower = 0;
+            } else {
+                intakePower = 1;
+            }
 
             if(intakeServoOn) {
                 robot.intakeServoR.setPower(1);
@@ -101,14 +107,14 @@ public class QualTeleop extends OpMode {
             }
         }
 
-        robot.intake.setPower(intakePower);
+        /*robot.intake.setPower(intakePower);
         if (gamepad1.aWasPressed()) {
             if (intakePower == 1){
                 intakePower = 0;
             } else {
                 intakePower = 1;
             }
-        }
+        }*/
 
         if (gamepad1.xWasPressed())
             limelight3A.start();
