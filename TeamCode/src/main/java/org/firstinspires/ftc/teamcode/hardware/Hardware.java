@@ -2,15 +2,14 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.bylazar.telemetry.PanelsTelemetry;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -24,7 +23,8 @@ public class Hardware {
     public DcMotorEx frontRight;
     public DcMotorEx backRight;
     public DcMotorEx intake;
-    public CRServo intakeServo;
+    public CRServo intakeServoR;
+    public CRServo intakeServoL;
     Limelight3A limelight3A;
     //RevHub orientation necessary for an usage of IMU
     RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection;
@@ -91,7 +91,8 @@ public class Hardware {
             telemetry.addLine("Can't find intake: making a mock");
         }
         
-        intakeServo = hardwareMap.get(CRServo.class, "intakeServo");
+        intakeServoR = hardwareMap.get(CRServo.class, "intakeServoR");
+        intakeServoL = hardwareMap.get(CRServo.class, "intakeServoL");
 
         frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

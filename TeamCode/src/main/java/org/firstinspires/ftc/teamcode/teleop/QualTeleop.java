@@ -3,21 +3,15 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.CRServo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.robotcore.internal.camera.delegating.DelegatingCaptureSequence;
 import org.firstinspires.ftc.teamcode.hardware.Hardware;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
-@TeleOp(name = "QualTeleopV1")
+@TeleOp(name = "QualTeleopV1") // field oriented driving
 public class QualTeleop extends OpMode {
     Hardware robot = new Hardware();
     private Limelight3A limelight3A;
@@ -25,6 +19,7 @@ public class QualTeleop extends OpMode {
     double turningPower;
     double intakePower = 0;
     boolean intakeServoOn = false;
+
 
     //telemetry
     public void help() {
@@ -36,11 +31,14 @@ public class QualTeleop extends OpMode {
         telemetry.addData("Right Joy (X only)", "Turn drive base");
         telemetry.addData("A", "intake toggle");
         telemetry.addData("B", "switch direction");
+        telemetry.addData("X", "start camera");
+        telemetry.addData("LB", "reset IMU");
     }
 
     @Override
     public void init() {
         robot.init(this.hardwareMap, telemetry);
+
         //initialize camera or throw an error if it fails.
         try{
             limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
@@ -95,9 +93,11 @@ public class QualTeleop extends OpMode {
             intakeServoOn = !intakeServoOn;
 
             if(intakeServoOn) {
-                robot.intakeServo.setPower(1);
+                robot.intakeServoR.setPower(1);
+                robot.intakeServoL.setPower(-1);
             } else {
-                robot.intakeServo.setPower(0);
+                robot.intakeServoR.setPower(0);
+                robot.intakeServoL.setPower(0);
             }
         }
 
