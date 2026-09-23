@@ -45,6 +45,21 @@ public class LimelightTeleop extends OpMode {
         double y = -robot.speed * gamepad1.left_stick_y;
         double x = robot.speed * gamepad1.left_stick_x;
 
+        // Detect yellows
+        if(gamepad1.a) {
+            limelight3A.pipelineSwitch(0);
+        }
+
+        // Detect red
+        if(gamepad1.b) {
+            limelight3A.pipelineSwitch(1);
+        }
+
+        // Detect blue
+        if(gamepad1.x) {
+            limelight3A.pipelineSwitch(2);
+        }
+
         Double turnToAngleSpeed = robot.getTurnToAngleSpeed(targetTurnAngle);
 
         if (turnToAngleSpeed != null && turnToAngleSpeed == 0) {
@@ -69,20 +84,16 @@ public class LimelightTeleop extends OpMode {
 
         LLResult llResult = limelight3A.getLatestResult();
         if (llResult != null && llResult.isValid()) {
-            ArrayList<String> patterns = new ArrayList<String>();
-            patterns.add("GPP");
-            patterns.add("PGP");
-            patterns.add("PPG");
-            int ID = llResult.getFiducialResults().get(0).getFiducialId();
+            // int ID = llResult.getFiducialResults().get(0).getFiducialId();
             Pose3D botPose = llResult.getBotpose_MT2();
             Tx = llResult.getTx();
             Ty = llResult.getTy();
             Ta = llResult.getTa();
 
-            telemetry.addData("Tag ID: ", ID);
-            telemetry.addData("Target X Offset (degree): ", Tx);
-            telemetry.addData("Target Y Offset (degree): ", Ty);
-            telemetry.addData("Target Area Offset (degree): ", Ta);
+            //telemetry.addData("Tag ID: ", ID);
+            telemetry.addData("Ball X Offset (degree): ", Tx); // How far left or right the target is (degrees)
+            telemetry.addData("Ball Y Offset (degree): ", Ty); // How far up or down the target is (degrees)
+            telemetry.addData("Ball Area (degree): ", Ta); // How big the target looks (0%-100% of the image)
 
             Pose3D limelightPose = llResult.getBotpose();
             Position llPosition = limelightPose.getPosition();
@@ -91,27 +102,6 @@ public class LimelightTeleop extends OpMode {
             telemetry.addData("Pose X", llPosition.x);
             telemetry.addData("Pose X", llPosition.y);
             telemetry.addData("Distance (in meters): ", getDistanceFromTag(Ta));
-
-            if (ID >= 21 && ID <= 23){
-                if (ID == 21){
-                    telemetry.addData("Pattern: ", patterns.get(0));
-                }
-                if (ID == 22){
-                    telemetry.addData("Pattern: ", patterns.get(1));
-                }
-                if (ID == 23){
-                    telemetry.addData("Pattern: ", patterns.get(2));
-                }
-            }
-
-            if (ID >= 20 && ID <= 24){
-                if (ID == 20){
-                    telemetry.addLine("Facing Blue");
-                }
-                if (ID == 24){
-                    telemetry.addLine("Facing Red");
-                }
-            }
         }
 
         telemetry.addData("left stick y", gamepad1.left_stick_y);
