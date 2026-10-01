@@ -3,24 +3,23 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.hardware.Hardware;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
-@TeleOp(name = "QualTeleopV4")
+@TeleOp(name = "QualTeleopV1") // field oriented driving
 public class QualTeleop extends OpMode {
     Hardware robot = new Hardware();
     private Limelight3A limelight3A;
     boolean reversed = false;
     double turningPower;
     double intakePower = 0;
+    boolean intakeServoOn = false;
+
 
     //telemetry
     public void help() {
@@ -32,11 +31,14 @@ public class QualTeleop extends OpMode {
         telemetry.addData("Right Joy (X only)", "Turn drive base");
         telemetry.addData("A", "intake toggle");
         telemetry.addData("B", "switch direction");
+        telemetry.addData("X", "start camera");
+        telemetry.addData("LB", "reset IMU");
     }
 
     @Override
     public void init() {
         robot.init(this.hardwareMap, telemetry);
+
         //initialize camera or throw an error if it fails.
         try{
             limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
@@ -59,6 +61,7 @@ public class QualTeleop extends OpMode {
         double moveAngle = joyStickAngle-robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
         double y = robot.speed * joyStickMagnitude*Math.sin(moveAngle);
         double x = robot.speed * joyStickMagnitude*Math.cos(moveAngle);
+
 
         YawPitchRollAngles orientation = robot.getOrientation();
 
@@ -85,14 +88,34 @@ public class QualTeleop extends OpMode {
             }
             reversed = !reversed;
         }
+
         robot.intake.setPower(intakePower);
+        if (gamepad1.aWasPressed()) {
+            intakeServoOn = !intakeServoOn;
+            if (intakePower == 1){
+                intakePower = 0;
+            } else {
+                intakePower = 1;
+            }
+
+            if(intakeServoOn) {
+                robot.intakeServoR.setPower(1);
+                robot.intakeServoL.setPower(-1);
+            } else {
+                robot.intakeServoR.setPower(0);
+                robot.intakeServoL.setPower(0);
+            }
+        }
+
+        /*robot.intake.setPower(intakePower);
         if (gamepad1.aWasPressed()) {
             if (intakePower == 1){
                 intakePower = 0;
             } else {
                 intakePower = 1;
             }
-        }
+        }*/
+
         if (gamepad1.xWasPressed())
             limelight3A.start();
 

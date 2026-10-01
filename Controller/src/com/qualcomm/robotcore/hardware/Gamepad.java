@@ -190,12 +190,12 @@ public class Gamepad {
         dpad_left = state.dpad_left;
         dpad_right = state.dpad_right;
         back = state.back;
-        guide = false;
+        guide = state.guide;
         start = state.start;
         left_bumper = state.left_bumper;
         right_bumper = state.right_bumper;
-        left_stick_button = false;
-        right_stick_button = false;
+        left_stick_button = state.left_stick_button;
+        right_stick_button = state.right_stick_button;
         left_trigger = state.left_trigger;
         right_trigger = state.right_trigger;
         updateButtonAliases();

@@ -8,7 +8,7 @@ import virtual_robot.games.Decode;
 import virtual_robot.robots.classes.MecanumBot;
 
 /**
- * Class for configuring field (width and image), and gamepad (virtual vs. real)
+ * Class for configuring the field (width and image) and the game.
  */
 public class Config {
     /**
@@ -23,11 +23,6 @@ public class Config {
      *  Width of the field, in pixels
      */
     public static final double FIELD_WIDTH = 648;
-
-    /**
-     * Whether to use "Virtual Gamepad" (true -> Virtual gamepad, false -> Real gamepad)
-     */
-    public static final boolean USE_VIRTUAL_GAMEPAD = true;
 
     /**
      * The image object for the field.
