@@ -4,8 +4,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.autonomous.AbstractAutonomous;
 
-@Autonomous
-public class PedroPathingStateMachineRun extends AbstractAutonomous {
+@Autonomous // Change from abstract when plagiarizing this is just so it compiles
+public abstract class PedroPathingStateMachineRun extends AbstractAutonomous {
     /*
     ElapsedTime timer = new ElapsedTime();
     CanOpen canOpen = new CanOpen();
