@@ -200,6 +200,13 @@ drives. They carry `frontLeft` / `frontRight` / `backLeft` / `backRight`, an `im
 Pinpoint odometry computer, `sensor_otos`, `octoquad`, a `color_sensor` and four
 distance sensors.
 
+**biobuzz_v1** is the team's robot: Mecanum Bot's drive, `imu` and Pinpoint (plus
+`sensor_otos`, `octoquad` and `limelight`), without its back servo, dead-wheel encoders,
+color sensor or distance sensors, and with three game motors — `intake` and `transfer`
+(312 RPM goBILDA motors) and `launcher` (a 6000 RPM 1:1 flywheel motor, 28 ticks/rev).
+On screen the intake roller and transfer belt turn green running forward and red in
+reverse, and the launcher wheel brightens with flywheel speed.
+
 Claw Bot is a two-wheel drive (`leftDrive` / `rightDrive`) with an `imu`, an `arm` motor,
 a `claw` servo and a Pinpoint odometry computer (`pinpoint`). It has no strafe, so the
 Pinpoint's Y pod only moves when the robot turns or is pushed.

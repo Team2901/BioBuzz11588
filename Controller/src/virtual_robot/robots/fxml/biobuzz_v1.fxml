@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.Group?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Rectangle?>
+
+<!-- biobuzz_v1: Mecanum Bot's chassis, with an intake roller at the front, a transfer belt
+     in the middle and a launcher flywheel at the back in place of the back servo arm. The front of the robot is the top
+     edge (the LIME marker). -->
+<Group xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="virtual_robot.robots.classes.BioBuzzV1">
+    <children>
+        <!-- chassis -->
+        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="GOLD" height="75.0" stroke="BLACK" strokeType="INSIDE" width="75.0" />
+        <!-- wheels -->
+        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="BLUE" height="20.0" stroke="BLACK" strokeType="INSIDE" width="10.0" y="55.0" />
+        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="BLUE" height="20.0" stroke="BLACK" strokeType="INSIDE" width="10.0" />
+        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="BLUE" height="20.0" stroke="BLACK" strokeType="INSIDE" width="10.0" x="65.0" />
+        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="BLUE" height="20.0" stroke="BLACK" strokeType="INSIDE" width="10.0" x="65.0" y="55.0" />
+        <!-- front marker -->
+        <Rectangle arcHeight="5.0" fill="LIME" height="10.0" stroke="BLACK" strokeType="INSIDE" width="10.0" x="32.5" />
+        <!-- intake roller, across the front between the front wheels -->
+        <Rectangle fx:id="intakeRoller" arcHeight="5.0" arcWidth="5.0" fill="DARKGRAY" height="7.0" stroke="BLACK" strokeType="INSIDE" width="45.0" x="15.0" y="12.0" />
+        <!-- transfer belt, from the intake back to the launcher -->
+        <Rectangle fx:id="transferBelt" arcHeight="3.0" arcWidth="3.0" fill="DARKGRAY" height="20.0" stroke="BLACK" strokeType="INSIDE" width="9.0" x="33.0" y="20.0" />
+        <!-- launcher flywheel, toward the back -->
+        <Circle fx:id="launcherWheel" centerX="37.5" centerY="53.0" fill="DIMGRAY" radius="11.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="1.5" />
+        <Circle centerX="37.5" centerY="53.0" fill="BLACK" radius="2.5" />
+    </children>
+</Group>

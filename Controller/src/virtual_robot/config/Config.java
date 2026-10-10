@@ -4,8 +4,8 @@ import com.qualcomm.robotcore.hardware.configuration.MotorType;
 import javafx.scene.image.Image;
 import virtual_robot.controller.Game;
 import virtual_robot.controller.VirtualBot;
+import virtual_robot.robots.classes.BioBuzzV1;
 import virtual_robot.games.NoGame;
-import virtual_robot.robots.classes.MecanumBot;
 
 /**
  * Class for configuring the field (width and image) and the game.
@@ -59,5 +59,5 @@ public class Config {
     /**
      *  Default Robot Configuration
      */
-    public static final Class<? extends VirtualBot> DEFAULT_BOT = MecanumBot.class;
+    public static final Class<? extends VirtualBot> DEFAULT_BOT = BioBuzzV1.class;
 }
