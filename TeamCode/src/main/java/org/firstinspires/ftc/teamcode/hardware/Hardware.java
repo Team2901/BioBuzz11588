@@ -22,6 +22,7 @@ public class Hardware {
     public DcMotorEx backLeft;
     public DcMotorEx frontRight;
     public DcMotorEx backRight;
+    public DcMotorEx launcher;
     public DcMotorEx intake;
     public CRServo intakeServoR;
     public CRServo intakeServoL;
@@ -90,6 +91,13 @@ public class Hardware {
             intake = new MockDcMotor();
             telemetry.addLine("Can't find intake: making a mock");
         }
+
+        try{
+            launcher = hardwareMap.get(DcMotorEx.class, "launcher");
+        }catch(IllegalArgumentException e){
+            launcher = new MockDcMotor();
+            telemetry.addLine("Can't find launcher: making a mock");
+        }
         
         intakeServoR = hardwareMap.get(CRServo.class, "intakeServoR");
         intakeServoL = hardwareMap.get(CRServo.class, "intakeServoL");
@@ -99,18 +107,21 @@ public class Hardware {
         backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        launcher.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         frontLeft.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         backLeft.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         backRight.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         intake.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        launcher.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        launcher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         /* This may not be necessary, but exists so that when using coachbot the wheels go
         * in the correct direction. The reveres wheels may need to change as the drive base
         * changes.

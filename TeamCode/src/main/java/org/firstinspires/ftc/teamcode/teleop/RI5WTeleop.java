@@ -4,20 +4,20 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.hardware.Hardware;
 
-@TeleOp(name = "QualTeleopV1") // field oriented driving
-public class QualTeleop extends OpMode {
+@TeleOp(name = "RI5WTeleop") // field oriented driving
+public class RI5WTeleop extends OpMode {
     Hardware robot = new Hardware();
     private Limelight3A limelight3A;
     boolean reversed = false;
     double turningPower;
     double intakePower = 0;
+    boolean launcherOn = false;
     boolean intakeServoOn = false;
 
 
@@ -29,10 +29,11 @@ public class QualTeleop extends OpMode {
         telemetry.addLine("Gamepad 1");
         telemetry.addData("Left Joy", "Move drive base");
         telemetry.addData("Right Joy (X only)", "Turn drive base");
-        telemetry.addData("A", "intake toggle");
-        telemetry.addData("B", "switch direction");
-        telemetry.addData("X", "start camera");
+        telemetry.addData("A", "intake power");
+        telemetry.addData("B", "intake direction");
+        telemetry.addData("X", "launcher power");
         telemetry.addData("LB", "reset IMU");
+
     }
 
     @Override
@@ -89,6 +90,10 @@ public class QualTeleop extends OpMode {
             reversed = !reversed;
         }
 
+        if (gamepad1.rightBumperWasPressed()) {
+            launcherOn = !launcherOn;
+        }
+
         robot.intake.setPower(intakePower);
         if (gamepad1.aWasPressed()) {
             intakeServoOn = !intakeServoOn;
@@ -98,26 +103,21 @@ public class QualTeleop extends OpMode {
                 intakePower = 1;
             }
 
-            if(intakeServoOn) {
+            /*if(intakeServoOn) {
                 robot.intakeServoR.setPower(1);
                 robot.intakeServoL.setPower(-1);
             } else {
                 robot.intakeServoR.setPower(0);
                 robot.intakeServoL.setPower(0);
             }
+
+             */
         }
 
-        /*robot.intake.setPower(intakePower);
-        if (gamepad1.aWasPressed()) {
-            if (intakePower == 1){
-                intakePower = 0;
-            } else {
-                intakePower = 1;
-            }
-        }*/
-
-        if (gamepad1.xWasPressed())
+        /*if (gamepad1.xWasPressed())
             limelight3A.start();
+
+         */
 
         //update the wheels' velocities
         robot.frontLeft.setVelocity(x - y + turningPower);
