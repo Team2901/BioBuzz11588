@@ -43,7 +43,7 @@ plugins {
  */
 
 javafx {
-    version = '17.0.6'
+    version = '21.0.2'
     // The simulator is FXML + Controls only (no javafx.media / javafx.swing usage found).
     modules = ['javafx.controls', 'javafx.fxml', 'javafx.graphics']
 }
@@ -75,6 +75,7 @@ def pedroPathingIvyVersion = '1.0.0'         // com.pedropathing:ivy - command s
 // (they still build and deploy on the physical robot via :TeamCode.)
 // Nothing is currently excluded: every OpMode in TeamCode compiles for the simulator.
 def simIncompatibleOpModes = [
+        'org/firstinspires/ftc/teamcode/cameraVisionPipelines/ConceptVisionBenchAprilTag.java'
 ]
 
 def sharedOpModesDir = layout.buildDirectory.dir('shared-opmodes')

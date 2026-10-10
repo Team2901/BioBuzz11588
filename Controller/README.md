@@ -200,7 +200,11 @@ drives. They carry `frontLeft` / `frontRight` / `backLeft` / `backRight`, an `im
 Pinpoint odometry computer, `sensor_otos`, `octoquad`, a `color_sensor` and four
 distance sensors.
 
-Also available: Claw Bot, Two Wheel Bot, XDrive Bot, Kiwi Bot, Swerve Bot, Differential
+Claw Bot is a two-wheel drive (`leftDrive` / `rightDrive`) with an `imu`, an `arm` motor,
+a `claw` servo and a Pinpoint odometry computer (`pinpoint`). It has no strafe, so the
+Pinpoint's Y pod only moves when the robot turns or is pushed.
+
+Also available: Two Wheel Bot, XDrive Bot, Kiwi Bot, Swerve Bot, Differential
 Swerve Bot, Square Omni Bot, Turret Bot, and a Programming Board that does not drive but
 carries a motor, servo, potentiometer, touch sensor and colour-distance sensor.
 
