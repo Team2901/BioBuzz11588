@@ -1,4 +1,4 @@
-/*package org.firstinspires.ftc.teamcode.testing;
+package org.firstinspires.ftc.teamcode.testing;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -177,4 +177,3 @@ public class LaunchMotorTest extends OpMode {
         telemetry();
     }
 }
-*/

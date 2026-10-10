@@ -248,6 +248,14 @@ public class Hardware {
         backLeft.setVelocity(-turnPower);
         backRight.setVelocity(turnPower);
     }
+    public void setMotorSpeedFromDistance(double distance) {
+        //
+        double tps= LAUNCHER_POWER_FIT_2 * Math.pow(distance, 2) + LAUNCHER_POWER_FIT_1 * distance + LAUNCHER_POWER_FIT_0;
+        launcher.setVelocity(tps);
+    }
+    double LAUNCHER_POWER_FIT_2 = 0;
+    double LAUNCHER_POWER_FIT_1 = 3;
+    double LAUNCHER_POWER_FIT_0 = 2;
 
     public void stop() {
         frontLeft.setPower(0);

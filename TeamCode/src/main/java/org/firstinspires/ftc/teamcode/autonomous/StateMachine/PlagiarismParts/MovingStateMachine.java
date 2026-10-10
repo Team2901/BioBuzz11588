@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.autonomous.StateMachine.PlagarismParts;
+package org.firstinspires.ftc.teamcode.autonomous.StateMachine.PlagiarismParts;
 
 class MovingStateMachine {
     /*
