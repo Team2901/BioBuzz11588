@@ -18,7 +18,7 @@ public class RI5WTeleop extends OpMode {
     double turningPower;
     double intakePower = 0;
     boolean launcherOn = false;
-    boolean intakeServoOn = false;
+    boolean intakeOn = false;
 
 
     //telemetry
@@ -96,7 +96,7 @@ public class RI5WTeleop extends OpMode {
 
         robot.intake.setPower(intakePower);
         if (gamepad1.aWasPressed()) {
-            intakeServoOn = !intakeServoOn;
+            intakeOn = !intakeOn;
             if (intakePower == 1){
                 intakePower = 0;
             } else {

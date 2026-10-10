@@ -24,8 +24,8 @@ public class Hardware {
     public DcMotorEx backRight;
     public DcMotorEx launcher;
     public DcMotorEx intake;
-    public CRServo intakeServoR;
-    public CRServo intakeServoL;
+    //public CRServo intakeServoR;
+    //public CRServo intakeServoL;
     Limelight3A limelight3A;
     //RevHub orientation necessary for an usage of IMU
     RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection;
@@ -99,8 +99,8 @@ public class Hardware {
             telemetry.addLine("Can't find launcher: making a mock");
         }
         
-        intakeServoR = hardwareMap.get(CRServo.class, "intakeServoR");
-        intakeServoL = hardwareMap.get(CRServo.class, "intakeServoL");
+        //intakeServoR = hardwareMap.get(CRServo.class, "intakeServoR");
+        //intakeServoL = hardwareMap.get(CRServo.class, "intakeServoL");
 
         frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
