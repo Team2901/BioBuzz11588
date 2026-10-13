@@ -18,12 +18,17 @@ import org.firstinspires.ftc.teamcode.utilities.ConfigUtilities;
 @Configurable
 public class Hardware {
 
-    public DcMotorEx frontLeft;
-    public DcMotorEx backLeft;
-    public DcMotorEx frontRight;
-    public DcMotorEx backRight;
-    public DcMotorEx launcher;
-    public DcMotorEx intake;
+    //Config comments updated 10/12/26
+    public DcMotorEx frontLeft; // CH - 0
+    public DcMotorEx backLeft; // CH - 1
+    public DcMotorEx frontRight; // EH - 0
+    public DcMotorEx backRight; // EH - 1
+    public DcMotorEx launcher; // CH - 2
+    public DcMotorEx intake; // EH - 2
+    public DcMotorEx transfer; // EH - 3
+    public Servo intakeServo; // CH - 0
+    public Servo launchServo; // EH - 0
+
     //public CRServo intakeServoR;
     //public CRServo intakeServoL;
     Limelight3A limelight3A;
@@ -98,7 +103,28 @@ public class Hardware {
             launcher = new MockDcMotor();
             telemetry.addLine("Can't find launcher: making a mock");
         }
-        
+
+        try{
+            transfer = hardwareMap.get(DcMotorEx.class, "transfer");
+        }catch(IllegalArgumentException e){
+            transfer = new MockDcMotor();
+            telemetry.addLine("Can't find transfer: making a mock");
+        }
+
+        try {
+            intakeServo = hardwareMap.get(Servo.class, "intakeServo");
+        } catch (IllegalArgumentException e) {
+            intakeServo = new MockServo();
+            telemetry.addLine("Can't find intakeServo: making a mock");
+        }
+
+        try {
+            launchServo = hardwareMap.get(Servo.class, "launchServo");
+        } catch (IllegalArgumentException e) {
+            launchServo = new MockServo();
+            telemetry.addLine("Can't find launchServo: making a mock");
+        }
+
         //intakeServoR = hardwareMap.get(CRServo.class, "intakeServoR");
         //intakeServoL = hardwareMap.get(CRServo.class, "intakeServoL");
 
@@ -108,6 +134,7 @@ public class Hardware {
         backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         launcher.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        transfer.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         frontLeft.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
@@ -115,6 +142,7 @@ public class Hardware {
         backRight.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         intake.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         launcher.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        transfer.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -122,6 +150,8 @@ public class Hardware {
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         launcher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        transfer.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         /* This may not be necessary, but exists so that when using coachbot the wheels go
         * in the correct direction. The reveres wheels may need to change as the drive base
         * changes.
@@ -140,6 +170,7 @@ public class Hardware {
         backLeft.setPower(0);
         backRight.setPower(0);
         intake.setPower(0);
+        launcher.setPower(0);
 
         /*Sets orientation: If something like field oriented driving or anything IMU
         * dependent isn't working check if this matches positions on the robot IRL */

@@ -16,7 +16,6 @@ public class RI5WTeleop extends OpMode {
     private Limelight3A limelight3A;
     boolean reversed = false;
     double turningPower;
-    double intakePower = 0;
     boolean launcherOn = false;
     boolean intakeOn = false;
 
@@ -54,6 +53,7 @@ public class RI5WTeleop extends OpMode {
     public void start(){
         if(limelight3A != null) limelight3A.start();
     }
+
     @Override
     public void loop() {
         //update joysticks and robot.speed
@@ -90,18 +90,25 @@ public class RI5WTeleop extends OpMode {
             reversed = !reversed;
         }
 
-        if (gamepad1.rightBumperWasPressed()) {
+        if (gamepad1.xWasPressed()) {
             launcherOn = !launcherOn;
         }
+        if (launcherOn) {
+            robot.launcher.setVelocity(2200);
+        } else {
+            robot.launcher.setVelocity(0);
+        }
 
-        robot.intake.setPower(intakePower);
         if (gamepad1.aWasPressed()) {
             intakeOn = !intakeOn;
-            if (intakePower == 1){
-                intakePower = 0;
-            } else {
-                intakePower = 1;
-            }
+        }
+
+        if (intakeOn) {
+            robot.intake.setPower(1);
+        } else {
+            robot.intake.setPower(0);
+        }
+
 
             /*if(intakeServoOn) {
                 robot.intakeServoR.setPower(1);
@@ -112,7 +119,6 @@ public class RI5WTeleop extends OpMode {
             }
 
              */
-        }
 
         /*if (gamepad1.xWasPressed())
             limelight3A.start();
