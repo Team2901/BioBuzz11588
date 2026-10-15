@@ -105,14 +105,14 @@ public class RI5WTeleop extends OpMode {
             robot.intake.setPower(0);
         }
 
-        if (gamepad1.bWasPressed()){
-            if (reversed){
-                robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
-            } else {
-                robot.intake.setDirection(DcMotorSimple.Direction.REVERSE);
-            }
-            reversed = !reversed;
-        }
+//        if (gamepad1.bWasPressed()){
+//            if (reversed){
+//                robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
+//            } else {
+//                robot.intake.setDirection(DcMotorSimple.Direction.REVERSE);
+//            }
+//            reversed = !reversed;
+//        }
 
         //transfer
         if (gamepad1.right_bumper) {
