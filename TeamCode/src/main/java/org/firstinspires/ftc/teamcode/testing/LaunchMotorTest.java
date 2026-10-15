@@ -96,13 +96,13 @@ public class LaunchMotorTest extends OpMode {
         robot.init(this.hardwareMap, telemetry);
         currentValue = values[0];
 
-       PIDFCoefficients defaultCoefficients = robot.launcher.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+        PIDFCoefficients defaultCoefficients = robot.launcher.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
         p = defaultCoefficients.p;
         i = defaultCoefficients.i;
         d = defaultCoefficients.d;
         f = defaultCoefficients.f;
 
-       help();
+        help();
     }
 
     @Override

@@ -20,7 +20,8 @@ public class RI5WTeleop extends OpMode {
     boolean launcherOn = false;
     boolean intakeOn = false;
     public int TRANSFER_POS_1 = 0;
-    public int TRANSFER_POS_2 = 1500;
+    public int TRANSFER_POS_2 = 200;
+    public int TRANSFER_POS_3 = 1500;
     boolean transferAtPos2 = false;
 
     //telemetry
@@ -32,7 +33,7 @@ public class RI5WTeleop extends OpMode {
         telemetry.addData("Left Joy", "Move drive base");
         telemetry.addData("Right Joy (X only)", "Turn drive base");
         telemetry.addData("A", "intake power");
-        telemetry.addData("B", "intake direction");
+        telemetry.addData("B", "reverse intake");
         telemetry.addData("X", "launcher power");
         telemetry.addData("LB", "reset IMU");
         telemetry.addData("RB", "transfer toggle");
@@ -74,18 +75,22 @@ public class RI5WTeleop extends OpMode {
 
         //update turning power based on right stick x
         if(gamepad1.right_stick_x != 0){
-            turningPower = .75 * gamepad1.right_stick_x * robot.speed ;
+            turningPower = .75 * gamepad1.right_stick_x * robot.speed;
+            // lt = intake
+            // rb = transfer (delay)
+            // lb = imu
+            //
         }
         else {
             turningPower = 0;
         }
 
-        if (gamepad1.left_bumper) {
+        if (gamepad1.dpadUpWasPressed()) {
             robot.imu.resetYaw();
         }
 
         //launcher
-        if (gamepad1.xWasPressed()) {
+        if (gamepad1.rightTriggerWasPressed()) {
             launcherOn = !launcherOn;
         }
         if (launcherOn) {
@@ -95,24 +100,24 @@ public class RI5WTeleop extends OpMode {
         }
 
         //intake
-        if (gamepad1.aWasPressed()) {
+        if (gamepad1.leftTriggerWasPressed()) {
             intakeOn = !intakeOn;
         }
 
         if (intakeOn) {
-            robot.intake.setPower(1);
+            robot.intake.setPower(0.65);
         } else {
             robot.intake.setPower(0);
         }
 
-//        if (gamepad1.bWasPressed()){
-//            if (reversed){
-//                robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
-//            } else {
-//                robot.intake.setDirection(DcMotorSimple.Direction.REVERSE);
-//            }
-//            reversed = !reversed;
-//        }
+        if (gamepad1.bWasPressed()){
+            if (reversed){
+                robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
+            } else {
+                robot.intake.setDirection(DcMotorSimple.Direction.REVERSE);
+            }
+            reversed = !reversed;
+        }
 
         //transfer
         if (gamepad1.right_bumper) {
@@ -124,10 +129,14 @@ public class RI5WTeleop extends OpMode {
                 robot.transfer.setTargetPosition(TRANSFER_POS_1);
             }
             robot.transfer.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.transfer.setPower(0.5);
+            robot.transfer.setPower(0.8);
         }
 
-            /*if(intakeServoOn) {
+        if (gamepad1.x) {
+            robot.transfer.setTargetPosition(TRANSFER_POS_3);
+        }
+
+            /* if(intakeServoOn) {
                 robot.intakeServoR.setPower(1);
                 robot.intakeServoL.setPower(-1);
             } else {
@@ -135,11 +144,8 @@ public class RI5WTeleop extends OpMode {
                 robot.intakeServoL.setPower(0);
             }
 
-             */
-
-        /*if (gamepad1.xWasPressed())
-            limelight3A.start();
-
+            if (gamepad1.xWasPressed())
+                limelight3A.start();
          */
 
         //update the wheels' velocities
@@ -152,8 +158,8 @@ public class RI5WTeleop extends OpMode {
         //telemetry
         if (llResult != null && llResult.isValid()){
             Pose3D botPose = llResult.getBotpose_MT2();
-            double distance = getDistanceFromTag(llResult.getTa());
-            telemetry.addData("Calculated Distance", distance);
+            //double distance = getDistanceFromTag(llResult.getTa());
+            //telemetry.addData("Calculated Distance", distance);
             telemetry.addData("Target X", llResult.getTx());
             telemetry.addData("Target Area", llResult.getTa());
             telemetry.addData("BotPose", botPose.toString());
@@ -171,10 +177,10 @@ public class RI5WTeleop extends OpMode {
     //update distance based on ta
 
     //only works when facing head on
-    public double getDistanceFromTag(double ta){
+    /*public double getDistanceFromTag(double ta){
         double scale = 29759.3774;
         double distance = (scale /ta);
         distance = Math.sqrt(distance);
         return distance;
-    }
+        */
 }

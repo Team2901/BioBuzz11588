@@ -170,6 +170,9 @@ public class Hardware {
             backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         }
 
+        intake.setDirection(DcMotorSimple.Direction.REVERSE);
+        launcher.setDirection(DcMotorSimple.Direction.REVERSE);
+
         frontLeft.setPower(0);
         frontRight.setPower(0);
         backLeft.setPower(0);
@@ -192,7 +195,7 @@ public class Hardware {
 
         // Our Control Hub has the new IMU chip (BHI260AP). Use the new generic IMU class when
         // requesting a reference to the IMU hardware. What chip you have can be determined by
-        // using "program and manage" tab on dr iver station, then "manage" on the hamburger menu.
+        // using "program and manage" tab on driver station, then "manage" on the hamburger menu.
         imu = hardwareMap.get(IMU.class, "imu");
 
         IMU.Parameters parameters;

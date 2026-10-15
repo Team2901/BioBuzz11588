@@ -60,6 +60,11 @@ public class LimelightTeleop extends OpMode {
             limelight3A.pipelineSwitch(2);
         }
 
+        // Detect Apriltags
+        if(gamepad1.y) {
+            limelight3A.pipelineSwitch(2);
+        }
+
         Double turnToAngleSpeed = robot.getTurnToAngleSpeed(targetTurnAngle);
 
         if (turnToAngleSpeed != null && turnToAngleSpeed == 0) {
