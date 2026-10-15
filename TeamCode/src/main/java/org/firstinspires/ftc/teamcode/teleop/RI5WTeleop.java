@@ -4,6 +4,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
@@ -18,7 +19,9 @@ public class RI5WTeleop extends OpMode {
     double turningPower;
     boolean launcherOn = false;
     boolean intakeOn = false;
-
+    public int TRANSFER_POS_1 = 0;
+    public int TRANSFER_POS_2 = 1500;
+    boolean transferAtPos2 = false;
 
     //telemetry
     public void help() {
@@ -32,6 +35,7 @@ public class RI5WTeleop extends OpMode {
         telemetry.addData("B", "intake direction");
         telemetry.addData("X", "launcher power");
         telemetry.addData("LB", "reset IMU");
+        telemetry.addData("RB", "transfer toggle");
 
     }
 
@@ -80,16 +84,7 @@ public class RI5WTeleop extends OpMode {
             robot.imu.resetYaw();
         }
 
-        // Saw some stuff that said it would be good to have an eject function
-        if (gamepad1.bWasPressed()){
-            if (reversed){
-                robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
-            } else {
-                robot.intake.setDirection(DcMotorSimple.Direction.REVERSE);
-            }
-            reversed = !reversed;
-        }
-
+        //launcher
         if (gamepad1.xWasPressed()) {
             launcherOn = !launcherOn;
         }
@@ -99,6 +94,7 @@ public class RI5WTeleop extends OpMode {
             robot.launcher.setVelocity(0);
         }
 
+        //intake
         if (gamepad1.aWasPressed()) {
             intakeOn = !intakeOn;
         }
@@ -109,6 +105,27 @@ public class RI5WTeleop extends OpMode {
             robot.intake.setPower(0);
         }
 
+        if (gamepad1.bWasPressed()){
+            if (reversed){
+                robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
+            } else {
+                robot.intake.setDirection(DcMotorSimple.Direction.REVERSE);
+            }
+            reversed = !reversed;
+        }
+
+        //transfer
+        if (gamepad1.right_bumper) {
+            transferAtPos2 =! transferAtPos2;
+
+            if (transferAtPos2) {
+                robot.transfer.setTargetPosition(TRANSFER_POS_2);
+            } else {
+                robot.transfer.setTargetPosition(TRANSFER_POS_1);
+            }
+            robot.transfer.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.transfer.setPower(0.5);
+        }
 
             /*if(intakeServoOn) {
                 robot.intakeServoR.setPower(1);
@@ -145,6 +162,9 @@ public class RI5WTeleop extends OpMode {
         telemetry.addData("Joystick Angle", Math.toDegrees(joyStickAngle));
         telemetry.addData("Move Angle", Math.toDegrees(moveAngle));
         telemetry.addData("turningPower", turningPower);
+        telemetry.addData("transfer current pos", robot.transfer.getCurrentPosition());
+        telemetry.addData("transfer target pos", robot.transfer.getTargetPosition());
+        telemetry.addData("transfer busy", robot.transfer.isBusy());
         help();
         telemetry.update();
     }

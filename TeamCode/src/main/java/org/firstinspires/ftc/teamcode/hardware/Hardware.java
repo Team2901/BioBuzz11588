@@ -27,7 +27,7 @@ public class Hardware {
     public DcMotorEx intake; // EH - 2
     public DcMotorEx transfer; // EH - 3
     public Servo intakeServo; // CH - 0
-    public Servo launchServo; // EH - 0
+    public Servo launchServo; // CH - 1
 
     //public CRServo intakeServoR;
     //public CRServo intakeServoL;
@@ -61,10 +61,15 @@ public class Hardware {
     public void init(HardwareMap hardwareMap, Telemetry _telemetry){
         telemetry = _telemetry;
 
-        limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight3A.pipelineSwitch(0);
-        limelight3A.start();
         //initializes necessary motors
+        try{
+            limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
+            limelight3A.pipelineSwitch(0);
+            limelight3A.start();
+        }catch (IllegalArgumentException e){
+            limelight3A = null;
+            telemetry.addLine("Can't find limelight3A: making a mock");
+        }
         try{
             frontLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
         }catch(IllegalArgumentException e){

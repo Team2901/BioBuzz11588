@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@TeleOp(name = "MotorTest.V1", group = "test")
+@TeleOp(name = "MotorTest", group = "test")
 public class MotorTest extends OpMode {
     List<Map.Entry<String, DcMotor>> dcMotorList = new ArrayList<>();
     int activeIndex = 0;
