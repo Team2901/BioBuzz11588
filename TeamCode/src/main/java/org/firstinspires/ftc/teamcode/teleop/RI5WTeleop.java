@@ -25,7 +25,7 @@ public class RI5WTeleop extends OpMode {
     public int TRANSFER_TOLERANCE = 10;
     public int transferState = 1;
     //transferState holds transfer positions 1-3,
-    //meaning the buttons (defined later) check which one is next
+    //meaning the buttons (defined later) check which state is next
 
     //telemetry
     public void help() {
