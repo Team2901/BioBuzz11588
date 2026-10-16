@@ -31,13 +31,14 @@ import com.qualcomm.robotcore.hardware.configuration.annotations.DevicePropertie
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 
 @DeviceProperties(
         name = "goBILDA® Pinpoint Odometry Computer",
         xmlTag = "goBILDAPinpoint",
         description ="goBILDA® Pinpoint Odometry Computer (IMU Sensor Fusion for 2 Wheel Odometry)"
-        )
+)
 
 public class GoBildaPinpointDriver implements HardwareDevice {
 
@@ -115,6 +116,42 @@ public class GoBildaPinpointDriver implements HardwareDevice {
         ONLY_UPDATE_HEADING,
     }
 
+    //Registers of the Odometry Computer; in the simulator they only exist for setBulkReadScope
+    public enum Register {
+        DEVICE_ID,
+        DEVICE_VERSION,
+        DEVICE_STATUS,
+        DEVICE_CONTROL,
+        LOOP_TIME,
+        X_ENCODER_VALUE,
+        Y_ENCODER_VALUE,
+        X_POSITION,
+        Y_POSITION,
+        H_ORIENTATION,
+        X_VELOCITY,
+        Y_VELOCITY,
+        H_VELOCITY,
+        MM_PER_TICK,
+        X_POD_OFFSET,
+        Y_POD_OFFSET,
+        YAW_SCALAR,
+        BULK_READ,
+        QUATERNION_W,
+        QUATERNION_X,
+        QUATERNION_Y,
+        QUATERNION_Z,
+        PITCH,
+        ROLL,
+        SET_BULK_READ;
+    }
+
+    //How I²C reads are checked for corruption; the simulator has no bus to corrupt
+    public enum ErrorDetectionType {
+        NONE,
+        CRC,
+        LOCAL_TEST;
+    }
+
 
 
     /**
@@ -186,8 +223,14 @@ public class GoBildaPinpointDriver implements HardwareDevice {
             xPosition = (float) pva.pos.getX(DistanceUnit.MM);
             yPosition = (float) pva.pos.getY(DistanceUnit.MM);
 
-            xVelocity = (float) pva.vel.getX(DistanceUnit.MM);
-            yVelocity = (float) pva.vel.getY(DistanceUnit.MM);
+            // CommonOdometry reports velocity in the robot frame (forward, left); the Pinpoint
+            // reports it in the same field frame as its position, so rotate by the heading.
+            double velForward = pva.vel.getX(DistanceUnit.MM);
+            double velLeft = pva.vel.getY(DistanceUnit.MM);
+            double cos = Math.cos(tempHeading);
+            double sin = Math.sin(tempHeading);
+            xVelocity = (float) (velForward * cos - velLeft * sin);
+            yVelocity = (float) (velForward * sin + velLeft * cos);
             hVelocity = (float) pva.vel.getHeading(AngleUnit.RADIANS);
         }
 
@@ -331,7 +374,11 @@ public class GoBildaPinpointDriver implements HardwareDevice {
      * @param distanceUnit the unit for posX
      */
     public synchronized void setPosX(double posX, DistanceUnit distanceUnit){
-        Pose2D pos = new Pose2D(DistanceUnit.MM, DistanceUnit.MM.fromUnit(distanceUnit, posX), yPosition, AngleUnit.RADIANS, hOrientation);
+        // The real device writes only the X register, so Y and heading keep their live values,
+        // not the ones cached at the last update().
+        Pose2D current = odo.getPosition();
+        Pose2D pos = new Pose2D(DistanceUnit.MM, DistanceUnit.MM.fromUnit(distanceUnit, posX),
+                current.getY(DistanceUnit.MM), AngleUnit.RADIANS, current.getHeading(AngleUnit.RADIANS));
         setPosition(pos);
     }
 
@@ -343,7 +390,9 @@ public class GoBildaPinpointDriver implements HardwareDevice {
      * @param distanceUnit the unit for posY
      */
     public synchronized void setPosY(double posY, DistanceUnit distanceUnit){
-        Pose2D pos = new Pose2D(DistanceUnit.MM, xPosition, DistanceUnit.MM.fromUnit(distanceUnit, posY), AngleUnit.RADIANS, hOrientation);
+        Pose2D current = odo.getPosition();
+        Pose2D pos = new Pose2D(DistanceUnit.MM, current.getX(DistanceUnit.MM),
+                DistanceUnit.MM.fromUnit(distanceUnit, posY), AngleUnit.RADIANS, current.getHeading(AngleUnit.RADIANS));
         setPosition(pos);
     }
 
@@ -355,7 +404,10 @@ public class GoBildaPinpointDriver implements HardwareDevice {
      * @param angleUnit Radians or Degrees
      */
     public synchronized void setHeading(double heading, AngleUnit angleUnit){
-        Pose2D pos = new Pose2D(DistanceUnit.MM, xPosition, yPosition, angleUnit, heading);
+        Pose2D current = odo.getPosition();
+        Pose2D pos = new Pose2D(DistanceUnit.MM, current.getX(DistanceUnit.MM), current.getY(DistanceUnit.MM),
+                angleUnit, heading);
+        setPosition(pos);
     }
 
     /**
@@ -505,9 +557,39 @@ public class GoBildaPinpointDriver implements HardwareDevice {
                 ((hOrientation + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI);
     }
 
+    /**
+     * Selects which registers update() reads. The simulator reads everything every time, so this has no effect.
+     * @param registers the registers to include in the bulk read
+     */
+    public void setBulkReadScope(Register... registers){}
+
+    /**
+     * Selects how reads are checked for corruption. The simulator's reads cannot be corrupted, so this has no effect.
+     * @param errorDetectionType NONE, CRC or LOCAL_TEST
+     */
+    public void setErrorDetectionType(ErrorDetectionType errorDetectionType){}
+
+    /**
+     * @return the orientation of the Odometry Computer as a quaternion. The simulated field is flat, so this is
+     * a pure rotation about Z by the heading.
+     */
+    public synchronized Quaternion getQuaternion(){
+        return new Quaternion((float)Math.cos(hOrientation / 2.0), 0, 0, (float)Math.sin(hOrientation / 2.0),
+                System.nanoTime());
+    }
+
+    /**
+     * @return the pitch of the Odometry Computer. Always 0, as the simulated field is flat.
+     */
+    public double getPitch(AngleUnit angleUnit){
+        return 0;
+    }
+
+    /**
+     * @return the roll of the Odometry Computer. Always 0, as the simulated field is flat.
+     */
+    public double getRoll(AngleUnit angleUnit){
+        return 0;
+    }
+
 }
-
-
-
-
-
