@@ -20,9 +20,12 @@ public class RI5WTeleop extends OpMode {
     boolean launcherOn = false;
     boolean intakeOn = false;
     public int TRANSFER_POS_1 = 0;
-    public int TRANSFER_POS_2 = 200;
+    public int TRANSFER_POS_2 = 250;
     public int TRANSFER_POS_3 = 1500;
-    boolean transferAtPos2 = false;
+    public int TRANSFER_TOLERANCE = 10;
+    public int transferState = 1;
+    //transferState holds transfer positions 1-3,
+    //meaning the buttons (defined later) check which one is next
 
     //telemetry
     public void help() {
@@ -32,17 +35,21 @@ public class RI5WTeleop extends OpMode {
         telemetry.addLine("Gamepad 1");
         telemetry.addData("Left Joy", "Move drive base");
         telemetry.addData("Right Joy (X only)", "Turn drive base");
-        telemetry.addData("A", "intake power");
-        telemetry.addData("B", "reverse intake");
-        telemetry.addData("X", "launcher power");
-        telemetry.addData("LB", "reset IMU");
-        telemetry.addData("RB", "transfer toggle");
-
+        telemetry.addData("Up", "reset IMU");
+        telemetry.addData("RT", "launcher");
+        telemetry.addData("LT", "intake");
+        telemetry.addData("B", "reverse intake direction");
+        telemetry.addData("RB", "transfer pos 1 & 2");
+        telemetry.addData("X", "transfer pos 2 & 3");
     }
 
     @Override
     public void init() {
         robot.init(this.hardwareMap, telemetry);
+
+        //This helps so if the transfer is at 1501 (for example),
+        // it still moves instead of shifting to 1500 first
+        robot.transfer.setTargetPositionTolerance(TRANSFER_TOLERANCE);
 
         //initialize camera or throw an error if it fails.
         try{
@@ -59,15 +66,15 @@ public class RI5WTeleop extends OpMode {
         if(limelight3A != null) limelight3A.start();
     }
 
-    @Override
+        @Override
     public void loop() {
+        //DRIVEBASE
         //update joysticks and robot.speed
         double joyStickAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.toRadians(90);
         double joyStickMagnitude = Math.hypot(-gamepad1.left_stick_y, gamepad1.left_stick_x);
         double moveAngle = joyStickAngle-robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
         double y = robot.speed * joyStickMagnitude*Math.sin(moveAngle);
         double x = robot.speed * joyStickMagnitude*Math.cos(moveAngle);
-
 
         YawPitchRollAngles orientation = robot.getOrientation();
 
@@ -76,10 +83,6 @@ public class RI5WTeleop extends OpMode {
         //update turning power based on right stick x
         if(gamepad1.right_stick_x != 0){
             turningPower = .75 * gamepad1.right_stick_x * robot.speed;
-            // lt = intake
-            // rb = transfer (delay)
-            // lb = imu
-            //
         }
         else {
             turningPower = 0;
@@ -89,7 +92,10 @@ public class RI5WTeleop extends OpMode {
             robot.imu.resetYaw();
         }
 
-        //launcher
+
+        //LAUNCHER
+        // If the launcher is on and the button is pressed, turn launcher off.
+        //if launcher isn't on, turn launcher on.
         if (gamepad1.rightTriggerWasPressed()) {
             launcherOn = !launcherOn;
         }
@@ -99,7 +105,10 @@ public class RI5WTeleop extends OpMode {
             robot.launcher.setVelocity(0);
         }
 
-        //intake
+
+        //INTAKE
+        // If the intake is on and the button is pressed, turn intake off.
+        //if intake isn't on, turn intake on.
         if (gamepad1.leftTriggerWasPressed()) {
             intakeOn = !intakeOn;
         }
@@ -110,30 +119,41 @@ public class RI5WTeleop extends OpMode {
             robot.intake.setPower(0);
         }
 
+        //changing direction the intake spins,
+        // to either collect pollen or release pollen
         if (gamepad1.bWasPressed()){
-            if (reversed){
-                robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
-            } else {
-                robot.intake.setDirection(DcMotorSimple.Direction.REVERSE);
-            }
-            reversed = !reversed;
+        if (reversed){
+            robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
+        } else {
+            robot.intake.setDirection(DcMotorSimple.Direction.REVERSE);
+        }
+        reversed = !reversed;
         }
 
-        //transfer
-        if (gamepad1.right_bumper) {
-            transferAtPos2 =! transferAtPos2;
 
-            if (transferAtPos2) {
-                robot.transfer.setTargetPosition(TRANSFER_POS_2);
+        //TRANSFER
+        //basically says "if at 1 and button is pressed, go to 2.
+        // If not at 1 and button is pressed, go to 1"
+        if (gamepad1.rightBumperWasPressed()) {
+            if (transferState == 1) {
+                transferState = 2;
+                moveTransfer(TRANSFER_POS_2);
             } else {
-                robot.transfer.setTargetPosition(TRANSFER_POS_1);
+                transferState = 1;
+                moveTransfer(TRANSFER_POS_1);
             }
-            robot.transfer.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.transfer.setPower(0.8);
         }
 
-        if (gamepad1.x) {
-            robot.transfer.setTargetPosition(TRANSFER_POS_3);
+        //basically says "if at 2 and button is pressed, go to 3.
+        // If not at 2 and button is pressed, go to 2"
+        if (gamepad1.xWasPressed()) {
+            if (transferState == 2) {
+                transferState = 3;
+                moveTransfer(TRANSFER_POS_3);
+            } else if (transferState == 3) {
+                transferState = 2;
+                moveTransfer(TRANSFER_POS_2);
+            }
         }
 
             /* if(intakeServoOn) {
@@ -174,7 +194,15 @@ public class RI5WTeleop extends OpMode {
         help();
         telemetry.update();
     }
-    //update distance based on ta
+
+    //every transfer state calls the same code to set target position,
+    //then the mode, then the power
+    public void moveTransfer(int target){
+        robot.transfer.setTargetPosition(target);
+        robot.transfer.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.transfer.setPower(0.8); //get up to 0.8
+    }
+
 
     //only works when facing head on
     /*public double getDistanceFromTag(double ta){
