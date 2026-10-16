@@ -29,6 +29,9 @@ public class ShootingStateMachine {
         }
         return null;
     }
+    public int getOrderIndex(){
+        return orderIndex;
+    }
     public void cancel(){
         orderIndex = -1;
     }
@@ -95,7 +98,7 @@ public class ShootingStateMachine {
                 robot.transfer.setTargetPosition(TRANSFER_POS_1);
             }
             robot.transfer.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.transfer.setPower(0.9);
+            robot.transfer.setPower(0.8);
         }
 
         @Override

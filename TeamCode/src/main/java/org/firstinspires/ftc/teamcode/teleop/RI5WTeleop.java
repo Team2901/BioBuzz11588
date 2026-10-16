@@ -11,6 +11,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.hardware.Hardware;
 
+//// Test Autonomous
+/// reverse launchServo
+
 @TeleOp(name = "RI5WTeleop") // field oriented driving
 public class RI5WTeleop extends OpMode {
     Hardware robot = new Hardware();
@@ -25,7 +28,7 @@ public class RI5WTeleop extends OpMode {
     public int TRANSFER_TOLERANCE = 10;
     public int transferState = 1;
     //transferState holds transfer positions 1-3,
-    //meaning the buttons (defined later) check which state is next
+    //meaning the buttons (defined later) check which one is next
 
     //telemetry
     public void help() {
