@@ -688,6 +688,9 @@ public class Gamepad {
      * Checks if y was released since the last call of this method
      * @return true if y was released since the last call of this method; otherwise false
      */
+
+    public boolean rightTriggerWasPressed() { return wasButtonPressed(y,y_bit); }
+    public boolean leftTriggerWasPressed() { return wasButtonPressed(y,y_bit); }
     public boolean yWasReleased() {
         return wasButtonReleased(y, y_bit);
     }
