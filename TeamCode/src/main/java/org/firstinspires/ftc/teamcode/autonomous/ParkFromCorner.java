@@ -12,7 +12,6 @@ public class ParkFromCorner extends AbstractAutonomous {
         telemetry.addLine("moves forward 12 inches and stops");
         telemetry.update();
         waitForStart();
-        //move(12, 0);
-        move(14, 0);
+        move(12, 0);
     }
 }
