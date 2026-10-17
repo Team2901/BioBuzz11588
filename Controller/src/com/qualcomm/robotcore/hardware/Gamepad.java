@@ -52,6 +52,34 @@ import virtual_robot.controller.VirtualGamePadController;
  */
 public class Gamepad {
 
+    public enum Type {
+        // Do NOT change the order/names of existing entries,
+        // you will break backwards compatibility!!
+        UNKNOWN(LegacyType.UNKNOWN),
+        LOGITECH_F310(LegacyType.LOGITECH_F310),
+        XBOX_360(LegacyType.XBOX_360),
+        SONY_PS4(LegacyType.SONY_PS4), // This indicates a PS4-compatible controller that is being used through our compatibility mode
+        SONY_PS4_SUPPORTED_BY_KERNEL(LegacyType.SONY_PS4); // This indicates a PS4-compatible controller that is being used through the DualShock 4 Linux kernel driver.
+
+        private final LegacyType correspondingLegacyType;
+        Type(LegacyType correspondingLegacyType) {
+            this.correspondingLegacyType = correspondingLegacyType;
+        }
+    }
+
+    // LegacyType is necessary because robocol gamepad version 3 was written in a way that was not
+    // forwards-compatible, so we have to keep sending V3-compatible values.
+    public enum LegacyType {
+        // Do NOT change the order or names of existing entries, or add new entries.
+        // You will break backwards compatibility!!
+        UNKNOWN,
+        LOGITECH_F310,
+        XBOX_360,
+        SONY_PS4;
+    }
+
+    public volatile Type type = Type.UNKNOWN;
+
     //for ps4
     public volatile boolean circle = false;
     public volatile boolean cross = false;
@@ -60,6 +88,17 @@ public class Gamepad {
     public volatile boolean share = false;
     public volatile boolean options = false;
     public volatile boolean ps = false;
+
+    /**
+     * PS4 Support - touchpad
+     */
+    public volatile boolean touchpad = false;
+    public volatile boolean touchpad_finger_1;
+    public volatile boolean touchpad_finger_2;
+    public volatile float touchpad_finger_1_x;
+    public volatile float touchpad_finger_1_y;
+    public volatile float touchpad_finger_2_x;
+    public volatile float touchpad_finger_2_y;
 
     public volatile boolean x = false;
     public volatile boolean y = false;
@@ -83,6 +122,42 @@ public class Gamepad {
     public volatile float left_trigger = 0;
     public volatile float right_trigger = 0;
 
+    /**
+     * default threshold for triggers being pressed
+     */
+    public static final float DEFAULT_TRIGGER_THRESHOLD = 0.5f;
+
+    /**
+     * threshold for triggers being pressed
+     */
+    private volatile float trigger_threshold = DEFAULT_TRIGGER_THRESHOLD;
+
+    /**
+     * Set the threshold for determining if a trigger is pressed
+     * @param threshold the new threshold for determining if a trigger is pressed
+     */
+    public void setTriggerThreshold(float threshold) {
+        trigger_threshold = threshold;
+    }
+
+    /**
+     * Get the threshold for determining if a trigger is pressed
+     * @return the current threshold for determining if a trigger is pressed
+     */
+    public float getTriggerThreshold() {
+        return trigger_threshold;
+    }
+
+    /**
+     * left trigger past threshold
+     */
+    public volatile boolean left_trigger_pressed = false;
+
+    /**
+     * right trigger past threshold
+     */
+    public volatile boolean right_trigger_pressed = false;
+
     public static int x_bit = 1;
     public static int y_bit = 1 << 1;
     public static int a_bit = 1 << 2;
@@ -98,6 +173,9 @@ public class Gamepad {
     public static int right_bumper_bit = 1 << 12;
     public static int left_stick_button_bit = 1 << 13;
     public static int right_stick_button_bit = 1 << 14;
+    public static int left_trigger_bit = 1 << 15;
+    public static int right_trigger_bit = 1 << 16;
+    public static int touchpad_bit = 1 << 17;
     public static int circle_bit = b_bit;
     public static int cross_bit = a_bit;
     public static int triangle_bit = y_bit;
@@ -149,6 +227,15 @@ public class Gamepad {
         right_stick_button = false;
         left_trigger = 0;
         right_trigger = 0;
+        left_trigger_pressed = false;
+        right_trigger_pressed = false;
+        touchpad = false;
+        touchpad_finger_1 = false;
+        touchpad_finger_2 = false;
+        touchpad_finger_1_x = 0;
+        touchpad_finger_1_y = 0;
+        touchpad_finger_2_x = 0;
+        touchpad_finger_2_y = 0;
     }
 
     public void update(ControllerState state){
@@ -215,6 +302,143 @@ public class Gamepad {
         share = back;
         options = start;
         ps = guide;
+
+        left_trigger_pressed = left_trigger >= trigger_threshold;
+        right_trigger_pressed = right_trigger >= trigger_threshold;
+    }
+
+    /**
+     * Copy the state of a gamepad into this gamepad
+     * @param gamepad state to be copied from
+     */
+    public void copy(Gamepad gamepad) {
+        // The real SDK round-trips through its Robocol serialization; this copies the same fields directly.
+        id = gamepad.id;
+        left_stick_x = gamepad.left_stick_x;
+        left_stick_y = gamepad.left_stick_y;
+        right_stick_x = gamepad.right_stick_x;
+        right_stick_y = gamepad.right_stick_y;
+        left_trigger = gamepad.left_trigger;
+        right_trigger = gamepad.right_trigger;
+        touchpad_finger_1 = gamepad.touchpad_finger_1;
+        touchpad_finger_2 = gamepad.touchpad_finger_2;
+        touchpad = gamepad.touchpad;
+        left_stick_button = gamepad.left_stick_button;
+        right_stick_button = gamepad.right_stick_button;
+        dpad_up = gamepad.dpad_up;
+        dpad_down = gamepad.dpad_down;
+        dpad_left = gamepad.dpad_left;
+        dpad_right = gamepad.dpad_right;
+        a = gamepad.a;
+        b = gamepad.b;
+        x = gamepad.x;
+        y = gamepad.y;
+        guide = gamepad.guide;
+        start = gamepad.start;
+        back = gamepad.back;
+        left_bumper = gamepad.left_bumper;
+        right_bumper = gamepad.right_bumper;
+        user = gamepad.user;
+        type = gamepad.type;
+        touchpad_finger_1_x = gamepad.touchpad_finger_1_x;
+        touchpad_finger_1_y = gamepad.touchpad_finger_1_y;
+        touchpad_finger_2_x = gamepad.touchpad_finger_2_x;
+        touchpad_finger_2_y = gamepad.touchpad_finger_2_y;
+
+        updateButtonAliases();
+    }
+
+    /**
+     * Reset this gamepad into its initial state
+     */
+    public void reset() {
+        copy(new Gamepad());
+    }
+
+    /**
+     * Are all analog sticks and triggers in their rest position?
+     * @return true if all analog sticks and triggers are at rest; otherwise false
+     */
+    public boolean atRest() {
+        return (
+                left_stick_x == 0f && left_stick_y == 0f &&
+                right_stick_x == 0f && right_stick_y == 0f &&
+                left_trigger == 0f && right_trigger == 0f);
+    }
+
+    /**
+     * Get the type of gamepad as a {@link Type}. This method defaults to "UNKNOWN".
+     * @return gamepad type
+     */
+    public Type type() {
+        return type;
+    }
+
+    /**
+     * Display a summary of this gamepad, including the state of all buttons, analog sticks, and triggers
+     * @return a summary
+     */
+    @Override
+    public String toString() {
+
+        switch (type) {
+            case SONY_PS4:
+            case SONY_PS4_SUPPORTED_BY_KERNEL:
+                return ps4ToString();
+
+            case UNKNOWN:
+            case LOGITECH_F310:
+            case XBOX_360:
+            default:
+                return genericToString();
+        }
+    }
+
+    protected String ps4ToString() {
+        String buttons = new String();
+        if (dpad_up) buttons += "dpad_up ";
+        if (dpad_down) buttons += "dpad_down ";
+        if (dpad_left) buttons += "dpad_left ";
+        if (dpad_right) buttons += "dpad_right ";
+        if (cross) buttons += "cross ";
+        if (circle) buttons += "circle ";
+        if (square) buttons += "square ";
+        if (triangle) buttons += "triangle ";
+        if (ps) buttons += "ps ";
+        if (share) buttons += "share ";
+        if (options) buttons += "options ";
+        if (touchpad) buttons += "touchpad ";
+        if (left_bumper) buttons += "left_bumper ";
+        if (right_bumper) buttons += "right_bumper ";
+        if (left_stick_button) buttons += "left stick button ";
+        if (right_stick_button) buttons += "right stick button ";
+
+        return String.format("ID: %2d user: %2d lx: % 1.2f ly: % 1.2f rx: % 1.2f ry: % 1.2f lt: %1.2f rt: %1.2f %s",
+                id, user, left_stick_x, left_stick_y,
+                right_stick_x, right_stick_y, left_trigger, right_trigger, buttons);
+    }
+
+    protected String genericToString() {
+        String buttons = new String();
+        if (dpad_up) buttons += "dpad_up ";
+        if (dpad_down) buttons += "dpad_down ";
+        if (dpad_left) buttons += "dpad_left ";
+        if (dpad_right) buttons += "dpad_right ";
+        if (a) buttons += "a ";
+        if (b) buttons += "b ";
+        if (x) buttons += "x ";
+        if (y) buttons += "y ";
+        if (guide) buttons += "guide ";
+        if (start) buttons += "start ";
+        if (back) buttons += "back ";
+        if (left_bumper) buttons += "left_bumper ";
+        if (right_bumper) buttons += "right_bumper ";
+        if (left_stick_button) buttons += "left stick button ";
+        if (right_stick_button) buttons += "right stick button ";
+
+        return String.format("ID: %2d user: %2d lx: % 1.2f ly: % 1.2f rx: % 1.2f ry: % 1.2f lt: %1.2f rt: %1.2f %s",
+                id, user, left_stick_x, left_stick_y,
+                right_stick_x, right_stick_y, left_trigger, right_trigger, buttons);
     }
 
     // To prevent blowing up the command queue if the user tries to send an LED command in a tight loop,
@@ -223,6 +447,17 @@ public class Gamepad {
     public EvictingBlockingQueue<LedEffect> ledQueue = new EvictingBlockingQueue<>(new ArrayBlockingQueue<LedEffect>(1));
 
     public static final int ID_UNASSOCIATED = -1;
+
+    /**
+     * Which user is this gamepad used by
+     */
+    protected volatile byte user = ID_UNASSOCIATED;
+
+    /**
+     * ID assigned to this gamepad by the OS. This value can change each time the device is plugged in.
+     */
+    public volatile int id = ID_UNASSOCIATED;  // public only for historical reasons
+
     protected byte userForEffects = ID_UNASSOCIATED;
 
     public void setUserForEffects(byte userForEffects) {
@@ -532,7 +767,8 @@ public class Gamepad {
     public int buttonsToInt(){
         int result = 0;
         boolean[] buttons = new boolean[]{x, y, a, b, dpad_up, dpad_down, dpad_left, dpad_right,
-                back, guide, start, left_bumper, right_bumper, left_stick_button, right_stick_button};
+                back, guide, start, left_bumper, right_bumper, left_stick_button, right_stick_button,
+                left_trigger >= trigger_threshold, right_trigger >= trigger_threshold, touchpad};
         for (int i=0; i<buttons.length; i++){
             result |= buttonToBit(buttons[i], 1<<i);
         }
@@ -688,11 +924,6 @@ public class Gamepad {
      * Checks if y was released since the last call of this method
      * @return true if y was released since the last call of this method; otherwise false
      */
-
-    public boolean rightTriggerWasPressed() { return wasButtonPressed(y,y_bit); }
-    public boolean rightTriggerWasReleased() { return wasButtonReleased(y, y_bit); }
-    public boolean leftTriggerWasPressed() { return wasButtonPressed(y,y_bit); }
-    public boolean leftTriggerWasReleased() { return wasButtonReleased(y, y_bit); }
     public boolean yWasReleased() {
         return wasButtonReleased(y, y_bit);
     }
@@ -920,5 +1151,53 @@ public class Gamepad {
      */
     public boolean psWasReleased() {
         return wasButtonReleased(ps, ps_bit);
+    }
+
+    /**
+     * Checks if touchpad was pressed since the last call of this method
+     * @return true if touchpad was pressed since the last call of this method; otherwise false
+     */
+    public boolean touchpadWasPressed() {
+        return wasButtonPressed(touchpad, touchpad_bit);
+    }
+
+    /**
+     * Checks if touchpad was released since the last call of this method
+     * @return true if touchpad was released since the last call of this method; otherwise false
+     */
+    public boolean touchpadWasReleased() {
+        return wasButtonReleased(touchpad, touchpad_bit);
+    }
+
+    /**
+     * Checks if left_trigger was pressed since the last call of this method
+     * @return true if left_trigger was pressed since the last call of this method; otherwise false
+     */
+    public boolean leftTriggerWasPressed() {
+        return wasButtonPressed(left_trigger >= trigger_threshold, left_trigger_bit);
+    }
+
+    /**
+     * Checks if left_trigger was released since the last call of this method
+     * @return true if left_trigger was released since the last call of this method; otherwise false
+     */
+    public boolean leftTriggerWasReleased() {
+        return wasButtonReleased(left_trigger >= trigger_threshold, left_trigger_bit);
+    }
+
+    /**
+     * Checks if right_trigger was pressed since the last call of this method
+     * @return true if right_trigger was pressed since the last call of this method; otherwise false
+     */
+    public boolean rightTriggerWasPressed() {
+        return wasButtonPressed(right_trigger >= trigger_threshold, right_trigger_bit);
+    }
+
+    /**
+     * Checks if right_trigger was released since the last call of this method
+     * @return true if right_trigger was released since the last call of this method; otherwise false
+     */
+    public boolean rightTriggerWasReleased() {
+        return wasButtonReleased(right_trigger >= trigger_threshold, right_trigger_bit);
     }
 }
