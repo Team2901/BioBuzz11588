@@ -38,7 +38,6 @@ public class RI5WTeleop extends OpMode {
         telemetry.addLine("Gamepad 1");
         telemetry.addData("Left Joy", "Move drive base");
         telemetry.addData("Right Joy (X only)", "Turn drive base");
-        telemetry.addData("Up", "reset IMU");
         telemetry.addData("RT", "launcher");
         telemetry.addData("LT", "intake");
         telemetry.addData("B", "reverse intake direction");
@@ -91,9 +90,11 @@ public class RI5WTeleop extends OpMode {
             turningPower = 0;
         }
 
-        if (gamepad1.dpadUpWasPressed()) {
+       /*if (gamepad1.dpadUpWasPressed()) {
             robot.imu.resetYaw();
         }
+
+        */
 
 
         //LAUNCHER
