@@ -200,7 +200,8 @@ drives. They carry `frontLeft` / `frontRight` / `backLeft` / `backRight`, an `im
 Pinpoint odometry computer, `sensor_otos`, `octoquad`, a `color_sensor` and four
 distance sensors.
 
-**biobuzz_v1** is the team's robot: Mecanum Bot's drive, `imu` and Pinpoint (plus
+**biobuzz_v1** is the team's robot: Mecanum Bot's drive with every drive motor mounted
+the other way round (so team code reverses the opposite side), `imu` and Pinpoint (plus
 `sensor_otos`, `octoquad` and `limelight`), without its back servo, dead-wheel encoders,
 color sensor or distance sensors, and with three game motors — `intake` and `transfer`
 (312 RPM goBILDA motors) and `launcher` (a 6000 RPM 1:1 flywheel motor, 28 ticks/rev).

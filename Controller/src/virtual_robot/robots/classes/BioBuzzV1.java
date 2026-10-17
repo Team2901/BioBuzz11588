@@ -51,6 +51,8 @@ public class BioBuzzV1 extends MecanumPhysicsBase {
 
     public BioBuzzV1() {
         super();
+        // BioBuzz's drive motors are mounted opposite to the default mecanum bot's.
+        reverseDriveMotors = true;
     }
 
     public void initialize() {
