@@ -90,12 +90,9 @@ public class RI5WTeleop extends OpMode {
             turningPower = 0;
         }
 
-       /*if (gamepad1.dpadUpWasPressed()) {
+       if (gamepad1.dpadUpWasPressed()) {
             robot.imu.resetYaw();
         }
-
-        */
-
 
         //LAUNCHER
         // If the launcher is on and the button is pressed, turn launcher off.
@@ -126,19 +123,19 @@ public class RI5WTeleop extends OpMode {
         //changing direction the intake spins,
         // to either collect pollen or release pollen
         if (gamepad1.bWasPressed()){
-        if (reversed){
-            robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
-        } else {
-            robot.intake.setDirection(DcMotorSimple.Direction.REVERSE);
-        }
-        reversed = !reversed;
+            if (reversed){
+                robot.intake.setDirection(DcMotorSimple.Direction.FORWARD);
+            } else {
+                robot.intake.setDirection(DcMotorSimple.Direction.REVERSE);
+            }
+            reversed = !reversed;
         }
 
 
         //TRANSFER
         //basically says "if at 1 and button is pressed, go to 2.
         // If not at 1 and button is pressed, go to 1"
-        if (gamepad1.rightBumperWasPressed()) {
+        if (gamepad1.xWasPressed()) {
             if (transferState == 1) {
                 transferState = 2;
                 moveTransfer(TRANSFER_POS_2);
@@ -150,7 +147,7 @@ public class RI5WTeleop extends OpMode {
 
         //basically says "if at 2 and button is pressed, go to 3.
         // If not at 2 and button is pressed, go to 2"
-        if (gamepad1.xWasPressed()) {
+        if (gamepad1.rightBumperWasPressed()) {
             if (transferState == 2) {
                 transferState = 3;
                 moveTransfer(TRANSFER_POS_3);
