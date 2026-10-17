@@ -239,7 +239,7 @@ public class Hardware {
                 turnPower = -speed;
             }
         }
-        telemetry.addData("Current Angle:", startAngle);
+        telemetry.addData("Error:", turnError);
         return turnPower;
     }
     public YawPitchRollAngles getOrientation(){
