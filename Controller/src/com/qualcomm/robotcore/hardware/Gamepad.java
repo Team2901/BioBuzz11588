@@ -690,7 +690,9 @@ public class Gamepad {
      */
 
     public boolean rightTriggerWasPressed() { return wasButtonPressed(y,y_bit); }
+    public boolean rightTriggerWasReleased() { return wasButtonReleased(y, y_bit); }
     public boolean leftTriggerWasPressed() { return wasButtonPressed(y,y_bit); }
+    public boolean leftTriggerWasReleased() { return wasButtonReleased(y, y_bit); }
     public boolean yWasReleased() {
         return wasButtonReleased(y, y_bit);
     }
