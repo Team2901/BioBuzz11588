@@ -84,6 +84,9 @@ public class ShootingStateMachine {
         public int TRANSFER_POS_2 = 1500;
         Hardware robot;
         boolean transferAtPos2 = false;
+        public MoveTransfer(Hardware robot){
+            this.robot = robot;
+        }
         @Override
         void enter() {
             if(robot.transfer.getTargetPosition() != TRANSFER_POS_2) {
