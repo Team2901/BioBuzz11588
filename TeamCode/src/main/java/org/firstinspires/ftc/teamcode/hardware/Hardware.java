@@ -34,7 +34,7 @@ public class Hardware {
     //RevHub orientation necessary for an usage of IMU
     RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection;
     RevHubOrientationOnRobot.LogoFacingDirection logoDirection;
-    public static double defaultVelocity = 1700;
+    public static double defaultVelocity = 1500;
     public double overrideVelocity = defaultVelocity;
 
     public IMU imu;

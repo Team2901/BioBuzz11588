@@ -27,6 +27,8 @@ public class RI5WTeleop extends OpMode {
     public int TRANSFER_POS_3 = 1500;
     public int TRANSFER_TOLERANCE = 10;
     public int transferState = 1;
+    public int launcherVelocityIncrement = 25;
+    public double transferSpeed = 0.85;
     //transferState holds transfer positions 1-3,
     //meaning the buttons (defined later) check which one is next
 
@@ -109,10 +111,10 @@ public class RI5WTeleop extends OpMode {
             robot.launcher.setVelocity(0);
         }
         if(gamepad1.yWasPressed()){
-            robot.overrideVelocity+=100;
+            robot.overrideVelocity+=launcherVelocityIncrement;
         }
         if(gamepad1.aWasPressed()){
-            robot.overrideVelocity-=100;
+            robot.overrideVelocity-=launcherVelocityIncrement;
         }
 
 
@@ -212,7 +214,7 @@ public class RI5WTeleop extends OpMode {
     public void moveTransfer(int target){
         robot.transfer.setTargetPosition(target);
         robot.transfer.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.transfer.setPower(0.8); //get up to 0.8
+        robot.transfer.setPower(transferSpeed); //get up to transferSpeed
     }
 
 
