@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -36,6 +35,7 @@ public class Hardware {
     RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection;
     RevHubOrientationOnRobot.LogoFacingDirection logoDirection;
     public static double defaultVelocity = 1700;
+    public double overrideVelocity = defaultVelocity;
 
     public IMU imu;
     public Telemetry telemetry;
@@ -167,8 +167,8 @@ public class Hardware {
             frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
             backRight.setDirection(DcMotorSimple.Direction.REVERSE);
         } else {
-            frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-            backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+            frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+            backRight.setDirection(DcMotorSimple.Direction.REVERSE);
         }
 
         intake.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -239,6 +239,7 @@ public class Hardware {
                 turnPower = -speed;
             }
         }
+        telemetry.addData("Current Angle:", startAngle);
         return turnPower;
     }
     public YawPitchRollAngles getOrientation(){

@@ -43,6 +43,8 @@ public class RI5WTeleop extends OpMode {
         telemetry.addData("B", "reverse intake direction");
         telemetry.addData("RB", "transfer pos 1 & 2");
         telemetry.addData("X", "transfer pos 2 & 3");
+        telemetry.addData("Y", "Increases Velocity");
+        telemetry.addData("A", "Decreases Velocity");
     }
 
     @Override
@@ -101,9 +103,16 @@ public class RI5WTeleop extends OpMode {
             launcherOn = !launcherOn;
         }
         if (launcherOn) {
-            robot.launcher.setVelocity(2200);
-        } else {
+            robot.launcher.setVelocity(robot.overrideVelocity);
+        }
+        else {
             robot.launcher.setVelocity(0);
+        }
+        if(gamepad1.yWasPressed()){
+            robot.overrideVelocity+=100;
+        }
+        if(gamepad1.aWasPressed()){
+            robot.overrideVelocity-=100;
         }
 
 
@@ -145,6 +154,7 @@ public class RI5WTeleop extends OpMode {
             }
         }
 
+
         //basically says "if at 2 and button is pressed, go to 3.
         // If not at 2 and button is pressed, go to 2"
         if (gamepad1.rightBumperWasPressed()) {
@@ -185,6 +195,7 @@ public class RI5WTeleop extends OpMode {
             telemetry.addData("Target Area", llResult.getTa());
             telemetry.addData("BotPose", botPose.toString());
         }
+        telemetry.addData("Current Velocity: ", robot.overrideVelocity);
         telemetry.addData("imu Angle", Math.toDegrees(robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS)));
         telemetry.addData("Joystick Angle", Math.toDegrees(joyStickAngle));
         telemetry.addData("Move Angle", Math.toDegrees(moveAngle));
