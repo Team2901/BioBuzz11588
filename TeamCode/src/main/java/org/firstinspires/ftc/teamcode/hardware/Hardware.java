@@ -18,10 +18,10 @@ import org.firstinspires.ftc.teamcode.utilities.ConfigUtilities;
 public class Hardware {
 
     //Config comments updated 10/12/26
-    public DcMotorEx frontLeft; // CH - 0
-    public DcMotorEx backLeft; // CH - 1
-    public DcMotorEx frontRight; // EH - 0
-    public DcMotorEx backRight; // EH - 1
+    public DcMotorEx frontLeft; // EH - 0
+    public DcMotorEx backLeft; // EH - 1
+    public DcMotorEx frontRight; // CH - 0
+    public DcMotorEx backRight; // CH - 1
     public DcMotorEx launcher; // CH - 2
     public DcMotorEx intake; // EH - 2
     public DcMotorEx transfer; // EH - 3
