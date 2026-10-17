@@ -98,6 +98,15 @@ public class RI5WTeleop extends OpMode {
             robot.imu.resetYaw();
         }
 
+       if (gamepad1.dpadLeftWasPressed()) {
+           robot.launchServo.setPosition(Hardware.POLLEN_POSITION);
+           robot.pollenPosition = true;
+       }
+
+        if (gamepad1.dpadRightWasPressed()) {
+            robot.launchServo.setPosition(Hardware.NECTAR_POSITION);
+            robot.pollenPosition = false;
+        }
         //LAUNCHER
         // If the launcher is on and the button is pressed, turn launcher off.
         //if launcher isn't on, turn launcher on.
@@ -205,6 +214,11 @@ public class RI5WTeleop extends OpMode {
         telemetry.addData("transfer current pos", robot.transfer.getCurrentPosition());
         telemetry.addData("transfer target pos", robot.transfer.getTargetPosition());
         telemetry.addData("transfer busy", robot.transfer.isBusy());
+        if (robot.pollenPosition) {
+            telemetry.addLine("pollen pickup ready");
+        } else {
+            telemetry.addLine("nectar pickup ready");
+        }
         help();
         telemetry.update();
     }

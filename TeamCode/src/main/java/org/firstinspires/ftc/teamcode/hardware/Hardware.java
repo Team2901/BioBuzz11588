@@ -48,6 +48,9 @@ public class Hardware {
     public static final double WHEEL_DIAMETER = 3.78;
     public static final double WHEEL_CIRCUMFERENCE = Math.PI * WHEEL_DIAMETER;
     public static final double TICKS_PER_INCH = TICKS_PER_DRIVE_REV / WHEEL_CIRCUMFERENCE;
+    public static final int POLLEN_POSITION = 0;
+    public static final int NECTAR_POSITION = 0;
+    public boolean pollenPosition = true; // false means nectar position
     //Turn error tolerance
     public double TOLERANCE = 1; // degrees
     public double robotTargetAngle;
