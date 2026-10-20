@@ -11,9 +11,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.hardware.Hardware;
 
-//// Test Autonomous
-/// reverse launchServo
-
 @TeleOp(name = "RI5WTeleop") // field oriented driving
 public class RI5WTeleop extends OpMode {
     Hardware robot = new Hardware();
@@ -28,7 +25,6 @@ public class RI5WTeleop extends OpMode {
     public int TRANSFER_TOLERANCE = 10;
     public int transferState = 1;
     public int launcherVelocityIncrement = 25;
-    public double transferSpeed = 0.85;
     //transferState holds transfer positions 1-3,
     //meaning the buttons (defined later) check which one is next
 
@@ -98,6 +94,15 @@ public class RI5WTeleop extends OpMode {
             robot.imu.resetYaw();
         }
 
+       if (gamepad1.dpadLeftWasPressed()) {
+           robot.launchServo.setPosition(Hardware.POLLEN_POSITION);
+           robot.pollenPosition = true;
+       }
+
+        if (gamepad1.dpadRightWasPressed()) {
+            robot.launchServo.setPosition(Hardware.NECTAR_POSITION);
+            robot.pollenPosition = false;
+        }
         //LAUNCHER
         // If the launcher is on and the button is pressed, turn launcher off.
         //if launcher isn't on, turn launcher on.
@@ -205,6 +210,11 @@ public class RI5WTeleop extends OpMode {
         telemetry.addData("transfer current pos", robot.transfer.getCurrentPosition());
         telemetry.addData("transfer target pos", robot.transfer.getTargetPosition());
         telemetry.addData("transfer busy", robot.transfer.isBusy());
+        if (robot.pollenPosition) {
+            telemetry.addLine("pollen pickup ready");
+        } else {
+            telemetry.addLine("nectar pickup ready");
+        }
         help();
         telemetry.update();
     }
@@ -214,7 +224,7 @@ public class RI5WTeleop extends OpMode {
     public void moveTransfer(int target){
         robot.transfer.setTargetPosition(target);
         robot.transfer.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.transfer.setPower(transferSpeed); //get up to transferSpeed
+        robot.transfer.setPower(0.85);
     }
 
 
