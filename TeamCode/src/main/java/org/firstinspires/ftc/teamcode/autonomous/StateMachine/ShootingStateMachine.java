@@ -83,9 +83,11 @@ public class ShootingStateMachine {
         public int TRANSFER_POS_1 = 0;
         public int TRANSFER_POS_2 = 1500;
         Hardware robot;
+        Telemetry telemetry;
         boolean transferAtPos2 = false;
-        public MoveTransfer(Hardware robot){
-            this.robot = robot;
+        public MoveTransfer(Hardware _robot, Telemetry _telemetry){
+            robot = _robot;
+            telemetry = _telemetry;
         }
         @Override
         void enter() {
@@ -105,11 +107,18 @@ public class ShootingStateMachine {
         }
 
         @Override
+        void update() {
+            telemetry.addData("currentPosition: ", robot.transfer.getCurrentPosition());
+            telemetry.addData("transferAtPos2: ", transferAtPos2);
+            super.update();
+        }
+
+        @Override
         boolean isEnded() {
             if(transferAtPos2){
-                return robot.transfer.getTargetPosition()<TRANSFER_POS_2+10 && robot.transfer.getTargetPosition()>TRANSFER_POS_2-10;
+                return robot.transfer.getCurrentPosition()<TRANSFER_POS_2+10 && robot.transfer.getCurrentPosition()>TRANSFER_POS_2-10;
             }else{
-                return robot.transfer.getTargetPosition()<TRANSFER_POS_1+10 && robot.transfer.getTargetPosition()>TRANSFER_POS_1-10;
+                return robot.transfer.getCurrentPosition()<TRANSFER_POS_1+10 && robot.transfer.getCurrentPosition()>TRANSFER_POS_1-10;
             }
         }
     }

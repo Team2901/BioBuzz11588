@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 @Autonomous(name = "ShootAndParkFromCenter")
 public class ShootAndParkFromCenter extends AbstractAutonomous {
-    ShootingStateMachine shootSystem = new ShootingStateMachine(new ArrayList<>(Arrays.asList(new Idle(), new ShootingStateMachine.SpinUp(robot), new ShootingStateMachine.MoveTransfer(robot), new ShootingStateMachine.MoveTransfer(robot), new End())), telemetry);
+    ShootingStateMachine shootSystem = new ShootingStateMachine(new ArrayList<>(Arrays.asList(new Idle(), new ShootingStateMachine.SpinUp(robot), new ShootingStateMachine.MoveTransfer(robot, telemetry), new ShootingStateMachine.MoveTransfer(robot, telemetry), new End())), telemetry);
     @Override
     public void runOpMode() throws InterruptedException {
         robot.init(hardwareMap, telemetry);
@@ -19,14 +19,13 @@ public class ShootAndParkFromCenter extends AbstractAutonomous {
         telemetry.update();
         waitForStart();
         shootSystem.start();
-        while(shootSystem.getOrderIndex() < shootSystem.order.size()-1){
+        while (shootSystem.getOrderIndex() < shootSystem.order.size() - 1) {
             shootSystem.update();
         }
         shootSystem.cancel();
-        // shoot balls
         move(18, 0);
         turnToAngle(-90);
-        move(5 * 12,0);
+        move(5 * 12, 0);
     }
 
 }
