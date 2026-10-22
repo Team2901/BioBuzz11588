@@ -193,18 +193,23 @@ public class Hardware {
         intake.setPower(0);
         launcher.setPower(0);
 
-        /*Sets orientation: If something like field oriented driving or anything IMU
-        * dependent isn't working check if this matches positions on the robot IRL */
-        logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
-        usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.UP;
-
-         if (configurationName.equals("coachbot 2901 24-25")) {
+        if (configurationName.equals("coachbot 2901 24-25")) {
             // Use the new RevHubOrientationOnRobot classes to describe how the control hub is mounted on the robot.
             // For the coach bot its mounted Backward / usb cable on the right (as seen from back of robot)
             // Doc: https://github.com/FIRST-Tech-Challenge/FtcRobotController/wiki/Universal-IMU-Interface
             logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.FORWARD;
             usbFacingDirection  = RevHubOrientationOnRobot.UsbFacingDirection.RIGHT;
         }
+
+
+
+        initPinpoint(hardwareMap);
+    }
+    private void initImu(HardwareMap hardwareMap){
+        /*Sets orientation: If something like field oriented driving or anything IMU
+         * dependent isn't working check if this matches positions on the robot IRL */
+        logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
+        usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.UP;
 
         // Our Control Hub has the new IMU chip (BHI260AP). Use the new generic IMU class when
         // requesting a reference to the IMU hardware. What chip you have can be determined by
@@ -218,9 +223,10 @@ public class Hardware {
 
         if(success && (telemetry != null)){
             telemetry.addLine("IMU initialized");
-            initPinpoint(hardwareMap);
             telemetry.update();
         }
+        initImu(hardwareMap);
+        initPinpoint(hardwareMap);
     }
 
     private void initPinpoint(HardwareMap hardwareMap) {
