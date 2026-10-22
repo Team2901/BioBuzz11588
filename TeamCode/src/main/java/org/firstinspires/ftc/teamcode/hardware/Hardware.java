@@ -46,7 +46,12 @@ public class Hardware {
 
     public IMU imu;
     public GoBildaPinpointDriver pinpoint;
-    
+
+    public static final double MAX_POWER = 1.0;
+    public static final double MIN_STALL_POWER = 0.01;
+    public static final double SLOWDOWN_DISTANCE = 2 *12; // start slowing down when 2ft from target position
+
+
     public Telemetry telemetry;
     /*Constants dependent on wheels, motors, and drive-base construction necessary for autonomous
     * methods in which we set distance we want to move in inches.
@@ -201,10 +206,10 @@ public class Hardware {
             usbFacingDirection  = RevHubOrientationOnRobot.UsbFacingDirection.RIGHT;
         }
 
-
-
+        initImu(hardwareMap);
         initPinpoint(hardwareMap);
     }
+
     private void initImu(HardwareMap hardwareMap){
         /*Sets orientation: If something like field oriented driving or anything IMU
          * dependent isn't working check if this matches positions on the robot IRL */
@@ -225,8 +230,6 @@ public class Hardware {
             telemetry.addLine("IMU initialized");
             telemetry.update();
         }
-        initImu(hardwareMap);
-        initPinpoint(hardwareMap);
     }
 
     private void initPinpoint(HardwareMap hardwareMap) {
@@ -274,6 +277,169 @@ public class Hardware {
         // Set the location of the robot - this should be the place you are starting the robot from
         pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0));
     }
+
+    /**
+     * TODO: Implement a field relative (non pending) move
+     *
+     * moveTowardsRelField - determine a power that will move the robot from where it currently
+     * is to the target position.
+     *
+     * 1. Determine the how far the robot currently is (B) from the taget position yielding (A-B)
+     *
+     * 2. Take the value (A-B) which is in field relative coordinates and
+     *    determine a power level that will move the robot in that direction.
+     *
+     * 3. Apply a max threshold so the power never exceeds the motor max power of 1.0
+     * 4. Apply a min threshold so the power is never below the stall power.
+     *
+     * 5. When the robot is within 2 ft of the target, start scaling the power down
+     *    from the max to the min threshold.
+     *
+     */
+    public void moveTowardsRelField(Pose2D targetPoseRelField) {
+        // 1. Get the position (aka pose) of the robot using the pinpoint object
+        // 2. Determine the difference between where the robot is on the field and the target position
+        // 3. Calculate the power in the field X and Y direction need to get from here to there.
+        // 4. Calculate the power needed to change the heading
+        // 5. Convert the field relative values to robot relative values.
+        Pose2D currentPoseRelField = pinpoint.getPosition();
+        Pose2D poseDeltaRelField = pose2DDelta(targetPoseRelField, currentPoseRelField);
+        double xPowerRelField = getError(poseDeltaRelField.getX(DistanceUnit.INCH), MAX_POWER/SLOWDOWN_DISTANCE, MAX_POWER, MIN_STALL_POWER);
+        double yPowerRelField = getError(poseDeltaRelField.getY(DistanceUnit.INCH), MAX_POWER/SLOWDOWN_DISTANCE, MAX_POWER, MIN_STALL_POWER);
+        double counterClockwisePower = getError(poseDeltaRelField.getHeading(AngleUnit.DEGREES), 1.0/30, 1, 0.01);
+        movePowerRelField(xPowerRelField, yPowerRelField, counterClockwisePower, currentPoseRelField.getHeading(AngleUnit.DEGREES));
+    }
+
+    /**
+     * TODO: implement helper method
+     *
+     * pose2DDelta - Returns the pose A-B.
+     *
+     * Given a pose A what x,y, and heading changes are needed to reach pos B.
+     */
+    public Pose2D pose2DDelta(Pose2D poseA, Pose2D poseB) {
+        // 1. Create a new pose object to return
+        Pose2D delta = new Pose2D(DistanceUnit.INCH,0,0,AngleUnit.DEGREES, 0);
+        // 3. Set the X value of the new pose object to A-B X value.
+        // 4. Set the Y value of the new pose object to A-B Y value.
+        // 5. Set the Heading to new heading of A-B values. use helper method angleDiff
+        return delta;
+    }
+
+    /**
+     * TODO: implement helper method
+     *
+     * getError - general purpose error function using a trapezoidal algorithm.
+     *
+     *  Example  #1: Control the robot speed in the X or Y direction as the robot approaches a target position.
+     *  For example if the robot should go full power until it is within 2ft of the target and then
+     *  slow down in a linear fashion as it approaches the target.
+     *  call this function with parameters
+     *     value: distance to target (in inches)
+     *     errorScale: 1.0 (max power) / 24 (inches)
+     *     maxThreshold: 1.0 (max power)
+     *     minThreshold: 0.01 (min power aka stall speed)
+     *
+     *  Example #2: control the power used to change the robot heading as it pivots to a target angle.
+     *  For example given a target angle the robot should turn using full power until it is within
+     *  30 degrees of the target angle and then slow down in a linear fashion as it approaches the
+     *  target angle. Call this function with parameters
+     *     value: taget angle (in degrees)
+     *     errorScale: 1.0 (max power) / 30 (degrees)
+     *     maxThreshold: 1.0 (max power)
+     *     minThreshold: 0.01 (mon pwer aka stall speed)
+     *
+     */
+    public double getError(double value, double errorScaler, double maxThreshold, double minThreshold) {
+        // 1. scale the input value by the errorScaler
+        // 2. clip the result to the max
+        // 3. clip the result to the min
+        double result = 0;
+        return result;
+    }
+
+    /**
+     * Given a target position on the field return the robot X,Y power needed to move toward the target position.
+     *
+     * @param xPowerRelField
+     * @param yPowerRelField
+     * @param counterClockwisePower
+     * @param robotHeadingRelField
+     */
+    public void movePowerRelField(double xPowerRelField, double yPowerRelField, double counterClockwisePower, double robotHeadingRelField) {
+
+        // 1. Convert from Field coordinate system to robot coordinate system.
+        double[] xyPowerRelRobot = translatePowerToRelRobot(xPowerRelField, yPowerRelField, robotHeadingRelField);
+
+        // 2. Move that robot in that direction.
+        movePowerRelRobot(xyPowerRelRobot[0], xyPowerRelRobot[1], counterClockwisePower);
+    }
+
+    /**
+     * Return Robot power in the X and Y direction given as input Field relative power in the X and Y direction
+     * and heading
+     *
+     * Given as input the X and Y power in terms of the field (aka I want to move full speed in the field's X direction)
+     * Field positive X direction is always away from the audience.
+     * Field Positive Y direction is always toward the BLUE side.
+     *
+     * Transform this into the power to apply in the robots X and Y direction.
+     * If the robot is facing the audience the positive X is
+     * If the robot is facing a
+     *
+     * @param xDiffRelField    power to apply in the Field relative X direction.
+     * @param yDiffRelField    power to apply in the Field relative Y direction.
+     * @param robotHeadingRelField robot heading in Field relative coordinate system
+     * @return
+     */
+    public double[] translatePowerToRelRobot(double xDiffRelField, double yDiffRelField, double robotHeadingRelField) {
+        // Step 1
+        // We currently have a power to apply in the X direction and a power to apply in the Y direction.
+        // Get the power to apply along the hypotenuse of the right triangle formed by X and Y values.
+        // Hypotenuse equation. H = squareRoot(x**2 + y**2) which Math.hypot does for you.
+        double xyMag = 0; // TODO: update
+
+        // Step 2
+        // The angle we have is the Target heading in the field coordinate system.
+        // However the robot my already be at some angle already. May even be at the
+        // target heading already..
+        //
+        // First, determine the target angle in field coordinate system using the X and Y values passed in
+        double xyHeadingRelField = 0; // TODO: update
+
+        // Step 3
+        // Next, calculate the difference between the target angle and the robot's current heading in field coordindate system.
+        double xyHeadingRelRobot = 0; // TODO: udpate
+
+        // Step 4
+        // Next, Determine how much of the power should be attributed to the Robot's X and Y directions
+        // To move forward on the field 2 ft, the robot may need to
+        //    move 2ft forward if it is facing forward
+        //    move -2ft forward if it is facing backward
+        //    strafe +/- 2ft if it is turned 90 degrees from forward
+        double xDiffRelRobot = 0; // update
+        double yDiffRelRobot = 0; // update
+
+        return new double[]{xDiffRelRobot, yDiffRelRobot};
+    }
+
+    public void movePowerRelRobot(double xPowerRelRobot, double yPowerRelRobot, double counterClockwisePower) {
+        // xPowerRelRobot = "forward", yPowerRelRobot = "left"
+        // Step 1. calculate the power needed for each motor
+
+        // Step 2.
+        // If any power is outside -1 to 1, scale all four down by the same amount
+        // so the robot still moves in the same direction.
+
+        // Step 3.
+        // Set power on all 4 motors.
+
+    }
+
+    public double angleDiff(double targetHeadingRelField, double robotHeadingRelField) {
+        return AngleUnit.normalizeDegrees(targetHeadingRelField - robotHeadingRelField);
+    }
+
 
     //Calculates velocity motors should be set to based on distance from desired angle. This should be
     //inside a loop so it is called constantly updating velocity as it approaches the desired angle.
