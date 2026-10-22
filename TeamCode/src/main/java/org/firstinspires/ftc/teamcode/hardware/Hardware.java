@@ -302,12 +302,6 @@ public class Hardware {
         // 3. Calculate the power in the field X and Y direction need to get from here to there.
         // 4. Calculate the power needed to change the heading
         // 5. Convert the field relative values to robot relative values.
-        Pose2D currentPoseRelField = pinpoint.getPosition();
-        Pose2D poseDeltaRelField = pose2DDelta(targetPoseRelField, currentPoseRelField);
-        double xPowerRelField = getError(poseDeltaRelField.getX(DistanceUnit.INCH), MAX_POWER/SLOWDOWN_DISTANCE, MAX_POWER, MIN_STALL_POWER);
-        double yPowerRelField = getError(poseDeltaRelField.getY(DistanceUnit.INCH), MAX_POWER/SLOWDOWN_DISTANCE, MAX_POWER, MIN_STALL_POWER);
-        double counterClockwisePower = getError(poseDeltaRelField.getHeading(AngleUnit.DEGREES), 1.0/30, 1, 0.01);
-        movePowerRelField(xPowerRelField, yPowerRelField, counterClockwisePower, currentPoseRelField.getHeading(AngleUnit.DEGREES));
     }
 
     /**
@@ -351,10 +345,10 @@ public class Hardware {
      *
      */
     public double getError(double value, double errorScaler, double maxThreshold, double minThreshold) {
+        double result = 0;
         // 1. scale the input value by the errorScaler
         // 2. clip the result to the max
         // 3. clip the result to the min
-        double result = 0;
         return result;
     }
 
