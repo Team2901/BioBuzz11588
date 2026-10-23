@@ -71,12 +71,12 @@ public class ShootingStateMachine {
         }
         @Override
         void enter() {
-            robot.launcher.setVelocity(robot.defaultVelocity);
+            robot.launcher.setVelocity(Hardware.defaultVelocity);
         }
 
         @Override
         boolean isEnded() {
-            return (Math.abs(robot.launcher.getVelocity()-robot.defaultVelocity)<=100);
+            return (Math.abs(robot.launcher.getVelocity()- Hardware.defaultVelocity)<=10);
         }
     }
     public static class MoveTransfer extends MyState{
@@ -103,7 +103,7 @@ public class ShootingStateMachine {
                 robot.transfer.setTargetPosition(TRANSFER_POS_1);
             }
             robot.transfer.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.transfer.setPower(0.8);
+            robot.transfer.setPower(1);
         }
 
         @Override
