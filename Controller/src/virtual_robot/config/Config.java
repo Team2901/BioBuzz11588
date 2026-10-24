@@ -27,7 +27,7 @@ public class Config {
     /**
      * The image object for the field.
      */
-    public static final Image BACKGROUND = new Image("/virtual_robot/assets/biobuzz648.bmp");
+    public static final Image BACKGROUND = new Image("/virtual_robot/assets/biobuzzFieldCoords648.bmp");
 
     /**
      * If true, Virtual Gamepad joysticks and triggers will stay in the position where they were
