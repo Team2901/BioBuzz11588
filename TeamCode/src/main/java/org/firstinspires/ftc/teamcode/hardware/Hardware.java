@@ -439,25 +439,24 @@ public class Hardware {
         // We currently have a power to apply in the X direction and a power to apply in the Y direction.
         // Get the power to apply along the hypotenuse of the right triangle formed by X and Y values.
         // Hypotenuse equation. H = squareRoot(x**2 + y**2) which Math.hypot does for you.
-        double xyMag = 0; // TODO implement step 1
+        double xyMag = Math.hypot(xDiffRelField, yDiffRelField);
 
         // Step 2. Determine the target angle in field coordinate system using the X and Y values passed in.
         // The angle we have is the Target heading in the field coordinate system.
         // However the robot my already be at some angle already. May even be at the
         // target heading already..
-        double xyHeadingRelField = 0; // TODO implement step 2
+        double xyHeadingRelField = Math.toDegrees(Math.atan2(yDiffRelField, xDiffRelField));
 
         // Step 3. Calculate the difference between the target angle and the robot's current heading in field coordinate system.
-        double xyHeadingRelRobot = 0; // TODO implement step 3
+        double xyHeadingRelRobot = xyHeadingRelField - robotHeadingDegreesRelField;
 
         // Step 4. Determine how much of the power should be attributed to the Robot's X and Y directions.
         // To move forward on the field 2 ft, the robot may need to
         //    move 2ft forward if it is facing forward
         //    move -2ft forward if it is facing backward
         //    strafe +/- 2ft if it is turned 90 degrees from forward
-        // TODO implement step 4
-        double xDiffRelRobot = 0;
-        double yDiffRelRobot = 0;
+        double xDiffRelRobot = Math.cos(Math.toRadians(xyHeadingRelRobot)) * xyMag;
+        double yDiffRelRobot = Math.sin(Math.toRadians(xyHeadingRelRobot)) * xyMag;
 
         return new double[]{xDiffRelRobot, yDiffRelRobot};
     }
@@ -476,15 +475,24 @@ public class Hardware {
      */
     public void movePowerRelRobot(double xPowerRelRobot, double yPowerRelRobot, double counterClockwisePower) {
         // Step 1. Calculate the power needed for each motor
-        // TODO implement step 1
+        double frontLeftPower = xPowerRelRobot - yPowerRelRobot - counterClockwisePower;
+        double frontRightPower = xPowerRelRobot + yPowerRelRobot + counterClockwisePower;
+        double backLeftPower = xPowerRelRobot + yPowerRelRobot - counterClockwisePower;
+        double backRightPower = xPowerRelRobot - yPowerRelRobot + counterClockwisePower;
 
         // Step 2. Scale the power to remaining in [-1, 1].
         // If any power is outside -1 to 1, scale all four down by the same amount
         // so the robot still moves in the same direction.
-        // TODO implement step 2
+
+        double max = Math.max(
+                Math.max(Math.max(frontLeftPower, frontRightPower),
+                        Math.max(backLeftPower, backRightPower)), 1);
 
         // Step 3. Set power on all 4 motors.
-        // TODO implement step 3
+        frontLeft.setPower(frontLeftPower / max);
+        frontRight.setPower(frontRightPower / max);
+        backLeft.setPower(backLeftPower / max);
+        backRight.setPower(backRightPower / max);
     }
 
     /**
