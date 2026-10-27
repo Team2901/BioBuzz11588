@@ -81,7 +81,7 @@ public class ShootingStateMachine {
     }
     public static class MoveTransfer extends MyState{
         public int TRANSFER_POS_1 = 0;
-        public int TRANSFER_POS_2 = 1500;
+        public int TRANSFER_POS_2 = 1700;
         Hardware robot;
         Telemetry telemetry;
         boolean transferAtPos2 = false;

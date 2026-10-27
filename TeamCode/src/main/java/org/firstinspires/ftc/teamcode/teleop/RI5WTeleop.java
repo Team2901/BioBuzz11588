@@ -224,7 +224,7 @@ public class RI5WTeleop extends OpMode {
     public void moveTransfer(int target){
         robot.transfer.setTargetPosition(target);
         robot.transfer.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.transfer.setPower(0.85);
+        robot.transfer.setPower(1);
     }
 
 

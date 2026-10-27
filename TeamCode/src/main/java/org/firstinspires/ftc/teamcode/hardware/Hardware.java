@@ -209,7 +209,7 @@ public class Hardware {
         }
 
         initImu(hardwareMap);
-        initPinpoint(hardwareMap);
+        //initPinpoint(hardwareMap);
     }
 
     private void initImu(HardwareMap hardwareMap) {
