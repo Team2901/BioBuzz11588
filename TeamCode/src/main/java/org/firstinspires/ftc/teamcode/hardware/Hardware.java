@@ -41,14 +41,14 @@ public class Hardware {
     public static double defaultVelocity = 1500;
     public double overrideVelocity = defaultVelocity;
 
-    private static final double pinpointXOffsetMM = 0;
-    private static final double pinpointYOffsetMM = 0;
-
     public IMU imu;
     RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.UP;
     RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
 
     public GoBildaPinpointDriver pinpoint;
+    private static final double pinpointXOffsetMM = 0;
+    private static final double pinpointYOffsetMM = 0;
+
 
     public static final double MAX_POWER = 1.0;
     public static final double MIN_STALL_POWER = 0.01;
@@ -212,9 +212,22 @@ public class Hardware {
         }
 
         initImu(hardwareMap);
-        //initPinpoint(hardwareMap);
+        initPinpoint(hardwareMap);
+
+        /*
+         * Set the location of the robot - this should be the place you are starting the robot from
+         * This is recommended before you run your autonomous, as a bad initial calibration can cause
+         * an incorrect starting value for x, y, and heading.
+         */
+        // TODO - this should not be part of init, it will reset the position when you run a teleop
+        pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0));
     }
 
+    /**
+     * Find the IMU named "imu" and initialize it for how the Control Hub is mounted on the robot.
+     *
+     * @param hardwareMap the OpMode's hardware map.
+     */
     private void initImu(HardwareMap hardwareMap) {
         // Our Control Hub has the new IMU chip (BHI260AP). Use the new generic IMU class when
         // requesting a reference to the IMU hardware. What chip you have can be determined by
@@ -229,6 +242,12 @@ public class Hardware {
         }
     }
 
+    /**
+     * Find the Pinpoint odometry computer named "pinpoint" and configure its pod offsets, pod type
+     * and encoder directions. The position is left as it was, so a starting pose set by auto carries over.
+     *
+     * @param hardwareMap the OpMode's hardware map.
+     */
     private void initPinpoint(HardwareMap hardwareMap) {
 
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
@@ -264,14 +283,13 @@ public class Hardware {
          * Before running the robot, recalibrate the IMU. This needs to happen when the robot is stationary
          * The IMU will automatically calibrate when first powered on, but recalibrating before running
          * the robot is a good idea to ensure that the calibration is "good".
-         * resetPosAndIMU will reset the position to 0,0,0 and also recalibrate the IMU.
-         * This is recommended before you run your autonomous, as a bad initial calibration can cause
-         * an incorrect starting value for x, y, and heading.
          */
-        pinpoint.resetPosAndIMU();
+        pinpoint.recalibrateIMU();
 
-        // Set the location of the robot - this should be the place you are starting the robot from
-        pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0));
+        if (telemetry != null) {
+            Pose2D initPose = pinpoint.getPosition();
+            telemetry.addData("pinpoint initialized", "%.2f %.2f %.2f", initPose.getX(DistanceUnit.INCH), initPose.getY(DistanceUnit.INCH), initPose.getHeading(AngleUnit.DEGREES));
+        }
     }
 
     /**
