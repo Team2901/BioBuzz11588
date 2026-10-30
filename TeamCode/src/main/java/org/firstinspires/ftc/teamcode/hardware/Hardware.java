@@ -286,37 +286,35 @@ public class Hardware {
      * motor powers once, and returns. Call it repeatedly in a loop; each call adjusts the power
      * as the robot gets closer, and the caller decides when the robot is close enough to stop.
      * <p>
-     * The power for X, Y and heading each follows the {@link #getError} profile: full power far
+     * The power for X, Y and heading each follows the getError profile: full power far
      * from the target, ramping down linearly once within 2 ft (or 30 degrees for heading), and
      * never below stall power.
      *
-     * @param targetPoseRelField the pose to move toward, in field coordinates: X and Y position
-     *                           plus the heading the robot should end up facing.
+     * @param targetPoseRelField  the pose to move toward, in field coordinates: X and Y position
+     *                            plus the heading the robot should end up facing.
+     * @param currentPoseRelField the pose the robot is at in field coordinates
      */
-    public void moveTowardsRelField(Pose2D targetPoseRelField) {
-        // Step 1. Get the robot's current pose from the pinpoint.
-        // Call pinpoint.update() first so the position is fresh, then pinpoint.getPosition().
-        // TODO implement step 1
+    public void moveTowardsRelField(Pose2D targetPoseRelField, Pose2D currentPoseRelField) {
 
-        // Step 2. Get the difference between the target pose and the current pose
+        // Step 1. Get the difference between the target pose and the current pose
         // Use pose2DDelta(targetPoseRelField, currentPose).
         // This is how far the robot still has to go in field X, field Y and heading.
-        // TODO implement step 2
+        // TODO implement step 1
 
-        // Step 3. Turn the X and Y differences into field relative X and Y powers
+        // Step 2. Turn the X and Y differences into field relative X and Y powers
         // Call getError,
         // e.g. errorScaler 1.0 / 24 so the robot slows down within 2 ft of the target.
-        // TODO implement step 3
+        // TODO implement step 2
 
-        // Step 4. Turn the heading difference into a counter-clockwise power
+        // Step 3. Turn the heading difference into a counter-clockwise power
         // Call getError,
         // e.g. errorScaler 1.0 / 30 so the robot slows down within 30 degrees.
-        // TODO implement step 4
+        // TODO implement step 3
 
-        // Step 5. Drive by calling movePowerRelField
+        // Step 4. Drive by calling movePowerRelField
         // Pass the powers from steps 3 and 4 and the robot's current heading.
         // It converts the field relative powers to robot relative ones and sets the motors.
-        // TODO implement step 5
+        // TODO implement step 4
     }
 
     /**
