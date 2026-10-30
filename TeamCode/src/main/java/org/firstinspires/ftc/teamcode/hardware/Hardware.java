@@ -36,8 +36,8 @@ public class Hardware {
     //public CRServo intakeServoL;
     Limelight3A limelight3A;
     //RevHub orientation necessary for an usage of IMU
-    RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection;
-    RevHubOrientationOnRobot.LogoFacingDirection logoDirection;
+
+
     public static double defaultVelocity = 1500;
     public double overrideVelocity = defaultVelocity;
 
@@ -45,6 +45,9 @@ public class Hardware {
     private static final double pinpointYOffsetMM = 0;
 
     public IMU imu;
+    RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.UP;
+    RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
+
     public GoBildaPinpointDriver pinpoint;
 
     public static final double MAX_POWER = 1.0;
@@ -213,24 +216,16 @@ public class Hardware {
     }
 
     private void initImu(HardwareMap hardwareMap) {
-        /*Sets orientation: If something like field oriented driving or anything IMU
-         * dependent isn't working check if this matches positions on the robot IRL */
-        logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
-        usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.UP;
-
         // Our Control Hub has the new IMU chip (BHI260AP). Use the new generic IMU class when
         // requesting a reference to the IMU hardware. What chip you have can be determined by
         // using "program and manage" tab on driver station, then "manage" on the hamburger menu.
         imu = hardwareMap.get(IMU.class, "imu");
-
-        IMU.Parameters parameters;
         RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbFacingDirection);
-        parameters = new IMU.Parameters(orientationOnRobot);
+        IMU.Parameters parameters = new IMU.Parameters(orientationOnRobot);
         boolean success = imu.initialize(parameters);
 
-        if (success && (telemetry != null)) {
-            telemetry.addLine("IMU initialized");
-            telemetry.update();
+        if (telemetry != null) {
+            telemetry.addData("IMU initialized?", success);
         }
     }
 
