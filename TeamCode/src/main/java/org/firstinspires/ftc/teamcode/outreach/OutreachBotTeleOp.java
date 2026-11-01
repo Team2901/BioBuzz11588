@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.outreach.utilities.ImprovedGamepad;
 
 
 @SuppressWarnings("unused")
-@TeleOp(name = "OutreachBotV1", group = "OutreachBot")
+@TeleOp(name = "OutreachBotOverride", group = "OutreachBot")
 public class OutreachBotTeleOp extends OpMode {
     OutreachBotHardware robot = new OutreachBotHardware();
     ElapsedTime timer = new ElapsedTime();

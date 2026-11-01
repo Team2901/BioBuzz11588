@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.outreach;
 
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -10,16 +11,21 @@ public class OutreachBotHardware {
     public DcMotor leftDrive = null;
     public DcMotor rightDrive = null;
     public Servo claw = null;
+    public DcMotor arm = null;
     private HardwareMap hardwareMap = null;
     public enum ClawState { OPEN, CLOSED }
     public ClawState currentClawState = ClawState.CLOSED;
+    public AnalogInput potentiometer = null;
 
 
     //outreach:
-    public static final double TURN_WEIGHT = 3;
+    public static final double TURN_WEIGHT = 1;
     public static final double STRAIGHT_POWER_WEIGHT = 2.0;
-    public static final double CLAW_OPEN_POSITION = 1;
-    public static final double CLAW_CLOSED_POSITION = 0.56;
+    public static final double CLAW_OPEN_POSITION = 0;
+    public static final double CLAW_CLOSED_POSITION = 0.5;
+    public static final double ARM_UP_POSITION = 3.0;
+    public static final double ARM_DOWN_POSITION = 0.5;
+    public static double ARM_POWER = 0.5;
 
     public void init(HardwareMap ahwMap) {
         // Save reference to Hardware map
@@ -39,8 +45,34 @@ public class OutreachBotHardware {
         rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         claw = hardwareMap.servo.get("claw");
-
         claw.setPosition(0);
+
+        arm = hardwareMap.dcMotor.get("arm");
+        //potentiometer = hardwareMap.analogInput.get("potentiometer");
+
+        arm.setDirection(DcMotor.Direction.FORWARD);
+        arm.setPower(0);
+        arm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-}
+    // reading arm position
+    public double getArmPosition() {
+        return potentiometer.getVoltage();
+    }
+
+    /*public void moveArm(double targetPosition) {
+        double currentPosition = potentiometer.getVoltage();
+        double error = targetPosition - currentPosition;
+        double power = error * ARM_POWER;
+        power = Math.max(-0.5, Math.min(0.5, power));
+        arm.setPower(power);
+    } */
+
+    //this sets the power of the arm motor, whether positive or negative
+    public void setArmPower(double power) {
+        arm.setPower(power);
+    }
+
+
+    }
