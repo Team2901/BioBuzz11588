@@ -47,13 +47,16 @@ public class OutreachClawbot extends OpMode {
             robot.claw.setPosition(OutreachBotHardware.CLAW_CLOSED_POSITION);
         }
 
+        // check the button press here so the "WasPressed" check clears out while the arm is moving
+        boolean upPressed = gamepad1.dpadUpWasPressed();
+        boolean downPressed = gamepad1.dpadDownWasPressed();
         if (!armMoving) {
-            if (gamepad1.dpadUpWasPressed()) {
+            if (upPressed) {
                 armMovePower = ARM_POWER; //setting positive power to motor
                 armMoveTime = ARM_UP_TIME; //setting the amount of time the arm should be moving
                 armMoving = true;
                 armTimer.reset(); //reset timer to start counting at 0
-            } else if (gamepad1.dpadDownWasPressed()){
+            } else if (downPressed){
                 armMovePower = -ARM_POWER; //setting negative power to motor
                 armMoveTime = ARM_DOWN_TIME;
                 armMoving = true;
