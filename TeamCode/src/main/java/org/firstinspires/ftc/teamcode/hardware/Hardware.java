@@ -292,6 +292,9 @@ public class Hardware {
         }
     }
 
+    public void update() {
+        pinpoint.update();
+    }
     /**
      * Set the drive motor powers for one step of a move toward a target pose on the field.
      * <p>
@@ -318,17 +321,23 @@ public class Hardware {
         // Step 2. Turn the X and Y differences into field relative X and Y powers
         // Call getError,
         // e.g. errorScaler 1.0 / 24 so the robot slows down within 2 ft of the target.
-        getError(poseDif.getX(DistanceUnit.INCH),1.0/24,1,0);
-
+        double xError = getError(poseDif.getX(DistanceUnit.INCH),1.0/24,1,0);
+        double yError = getError(poseDif.getY(DistanceUnit.INCH), 1.0/24, 1, 0);
         // Step 3. Turn the heading difference into a counter-clockwise power
         // Call getError,
         // e.g. errorScaler 1.0 / 30 so the robot slows down within 30 degrees.
-
+        double headingError = getError(poseDif.getHeading(AngleUnit.DEGREES), 1.0/30, 1, 0);
 
         // Step 4. Drive by calling movePowerRelField
         // Pass the powers from steps 3 and 4 and the robot's current heading.
         // It converts the field relative powers to robot relative ones and sets the motors.
-        // TODO implement step 4
+
+        // TODO remove telemetry
+        telemetry.addData("xError", xError);
+        telemetry.addData("yError", yError);
+        telemetry.addData("headingError", headingError);
+
+        movePowerRelField(xError, yError, headingError, currentPoseRelField.getHeading(AngleUnit.DEGREES));
     }
 
     /**
