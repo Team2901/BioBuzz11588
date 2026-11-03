@@ -312,17 +312,18 @@ public class Hardware {
         // Step 1. Get the difference between the target pose and the current pose
         // Use pose2DDelta(targetPoseRelField, currentPose).
         // This is how far the robot still has to go in field X, field Y and heading.
-        // TODO implement step 1
+
+        Pose2D poseDif = pose2DDelta(targetPoseRelField , currentPoseRelField);
 
         // Step 2. Turn the X and Y differences into field relative X and Y powers
         // Call getError,
         // e.g. errorScaler 1.0 / 24 so the robot slows down within 2 ft of the target.
-        // TODO implement step 2
+        getError(poseDif.getX(DistanceUnit.INCH),1.0/24,1,0);
 
         // Step 3. Turn the heading difference into a counter-clockwise power
         // Call getError,
         // e.g. errorScaler 1.0 / 30 so the robot slows down within 30 degrees.
-        // TODO implement step 3
+
 
         // Step 4. Drive by calling movePowerRelField
         // Pass the powers from steps 3 and 4 and the robot's current heading.
@@ -344,22 +345,21 @@ public class Hardware {
     public Pose2D pose2DDelta(Pose2D poseA, Pose2D poseB) {
         // Step 1. Calculate the X difference A-B.
         // Read both X values in the same unit (inches), e.g. poseA.getX(DistanceUnit.INCH).
-        // TODO implement step 1
+        double xDif = poseA.getX(DistanceUnit.INCH) - poseB.getX(DistanceUnit.INCH);
 
         // Step 2. Calculate the Y difference A-B the same way.
-        // TODO implement step 2
+        double yDif = poseA.getY(DistanceUnit.INCH) - poseB.getY(DistanceUnit.INCH);
 
         // Step 3.  Calculate the heading difference A-B
         // Use the helper method angleDiffDegrees, so the result is the shortest turn.
         // e.g. -160 - 180 -> 20 instead of -340.
-        // TODO implement step 3
+        double hedgeDif = angleDiffDegrees(poseA.getHeading(AngleUnit.DEGREES) ,
+                poseB.getHeading(AngleUnit.DEGREES));
 
         // Step 4. Create the pose to return from those three values
         // Pose2D has no setters, so the values must go into the constructor (replace the zeros below).
-        // TODO implement step 4
-        Pose2D delta = new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0);
 
-        return delta;
+        return new Pose2D(DistanceUnit.INCH, xDif, yDif, AngleUnit.DEGREES, hedgeDif);
     }
 
     /**
@@ -398,14 +398,14 @@ public class Hardware {
      */
     public double getError(double value, double errorScaler, double maxThreshold, double minThreshold) {
         // Step 1. Scale the input value by the errorScaler.
-        // TODO implement step 1
-        double result = 0;
+
+        double result = (errorScaler * value);
 
         // Step 2. Clip the result to the max.
-        // TODO implement step 2
+        result = Math.signum(result) * Math.min(Math.abs(result), Math.abs(maxThreshold));
 
         // Step 3. Clip the result to the min.
-        // TODO implement step 3
+        result = Math.signum(result) * Math.max(Math.abs(result), Math.abs(minThreshold));
 
         return result;
     }

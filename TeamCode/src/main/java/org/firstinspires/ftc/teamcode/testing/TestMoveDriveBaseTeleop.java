@@ -3,6 +3,9 @@ package org.firstinspires.ftc.teamcode.testing;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.hardware.Hardware;
 
 @TeleOp(group = "test")
@@ -22,6 +25,10 @@ public class TestMoveDriveBaseTeleop extends OpMode {
         double rightJoyX = gamepad1.right_stick_x;
 
         double robotAngle  = robot.getAngle() + 90; // TODO - robot angle should match how robot is initially on field
-        robot.movePowerRelField(leftJoyX, leftJoyY, -rightJoyX, robotAngle);
+        if(gamepad1.a){
+            robot.moveTowardsRelField(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0), robot.pinpoint.getPosition());
+        }else{
+            robot.movePowerRelField(leftJoyX, leftJoyY, -rightJoyX, robotAngle);
+        }
     }
 }
