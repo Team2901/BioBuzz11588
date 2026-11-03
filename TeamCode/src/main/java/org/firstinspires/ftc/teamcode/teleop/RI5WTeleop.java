@@ -192,7 +192,6 @@ public class RI5WTeleop extends OpMode {
             if (gamepad1.xWasPressed())
                 limelight3A.start();
          */
-
         //update the wheels' velocities
         robot.frontLeft.setVelocity(x - y + turningPower);
         robot.frontRight.setVelocity(x + y - turningPower);
