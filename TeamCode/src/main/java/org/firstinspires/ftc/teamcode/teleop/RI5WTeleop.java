@@ -19,6 +19,7 @@ public class RI5WTeleop extends OpMode {
     double turningPower;
     boolean launcherOn = false;
     boolean intakeOn = false;
+    boolean servoForPollen = true;
     public int TRANSFER_POS_1 = 0;
     public int TRANSFER_POS_2 = 250;
     public int TRANSFER_POS_3 = 1500;
@@ -160,8 +161,14 @@ public class RI5WTeleop extends OpMode {
                 moveTransfer(TRANSFER_POS_1);
             }
         }
-
-
+        if(servoForPollen){
+            robot.launchServo.setPosition(0.04);
+        }else{
+            robot.launchServo.setPosition(0.27);
+        }
+        if(gamepad1.dpadDownWasPressed()){
+            servoForPollen = !servoForPollen;
+        }
         //basically says "if at 2 and button is pressed, go to 3.
         // If not at 2 and button is pressed, go to 2"
         if (gamepad1.rightBumperWasPressed()) {
