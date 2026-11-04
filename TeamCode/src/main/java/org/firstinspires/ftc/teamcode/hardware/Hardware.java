@@ -186,7 +186,7 @@ public class Hardware {
          * changes.
          */
         String configurationName = ConfigUtilities.getRobotConfigurationName();
-        if (configurationName.equals("coachbot 2901 24-25")) {
+        if (configurationName.equals("coachbot 2901 26-27")) {
             frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
             backRight.setDirection(DcMotorSimple.Direction.REVERSE);
         } else {
@@ -334,6 +334,9 @@ public class Hardware {
         // It converts the field relative powers to robot relative ones and sets the motors.
 
         // TODO remove telemetry
+        telemetry.addData("headingCurrent", currentPoseRelField.getHeading(AngleUnit.DEGREES));
+        telemetry.addData("headingTarget", targetPoseRelField.getHeading(AngleUnit.DEGREES));
+        telemetry.addData("headingDiff", poseDif.getHeading(AngleUnit.DEGREES));
         telemetry.addData("xError", xError);
         telemetry.addData("yError", yError);
         telemetry.addData("headingError", headingError);
