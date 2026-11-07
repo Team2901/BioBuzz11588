@@ -84,7 +84,7 @@ public class Hardware {
 
     public void init(HardwareMap hardwareMap, Telemetry _telemetry) {
         telemetry = _telemetry;
-        turret = new Turret(hardwareMap, _telemetry, 90);
+        turret = new Turret(hardwareMap, _telemetry, this);
         //initializes necessary motors
         try {
             limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
@@ -294,6 +294,7 @@ public class Hardware {
     }
 
     public void update() {
+        turret.update();
         pinpoint.update();
     }
     /**

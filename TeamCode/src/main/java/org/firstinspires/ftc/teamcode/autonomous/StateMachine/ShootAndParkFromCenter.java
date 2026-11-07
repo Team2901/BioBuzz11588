@@ -23,11 +23,6 @@ public class ShootAndParkFromCenter extends AbstractAutonomous {
             shootSystem.update();
         }
         shootSystem.cancel();
-        /*
-        move(18, 0);
-        turnToAngle(-90);
-        move(5 * 12, 0);
-         */
     }
 
 }

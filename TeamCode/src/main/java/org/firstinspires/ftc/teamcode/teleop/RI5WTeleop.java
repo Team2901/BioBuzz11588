@@ -71,6 +71,7 @@ public class RI5WTeleop extends OpMode {
 
         @Override
     public void loop() {
+        robot.update();
         //DRIVEBASE
         //update joysticks and robot.speed
         double joyStickAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.toRadians(90);
