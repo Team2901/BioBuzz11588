@@ -1,10 +1,13 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
+import android.annotation.SuppressLint;
+
 import androidx.annotation.NonNull;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.autonomous.StateMachine.MyState;
@@ -140,6 +143,7 @@ class CleanCounterState extends BaseState {
 
 // TODO: advance to next state when Y button pressed
 class DoDishesState extends BaseState {
+    ElapsedTime timer = new ElapsedTime(0);
 
     public DoDishesState(Gamepad gamepad1, Telemetry telemetry) {
         super(gamepad1, telemetry);
@@ -151,13 +155,15 @@ class DoDishesState extends BaseState {
         return "DoDishes";
     }
 
+    @SuppressLint("DefaultLocale")
     @Override
     public boolean update() {
-        if (gamepad1.yWasPressed()) {
-            telemetry.addLine("Y button was pressed.");
+        if (timer.seconds() > 5) {
+            telemetry.addLine("Timer's up, dishes are done.");
             done = true;
         } else {
-            telemetry.addLine("Press Y when done doing the dishes.");
+            double countdown = 5 - timer.seconds();
+            telemetry.addLine(String.format("Dishes will be done in %.3f seconds.", countdown));
 
         }
         return false;
@@ -165,7 +171,7 @@ class DoDishesState extends BaseState {
 
     @Override
     public void enter() {
-
+        timer.reset();
     }
 
     @Override
