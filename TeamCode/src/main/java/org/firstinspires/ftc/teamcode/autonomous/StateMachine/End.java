@@ -2,12 +2,12 @@ package org.firstinspires.ftc.teamcode.autonomous.StateMachine;
 
 class End extends MyState {
     @Override
-    void enter() {
+    public void enter() {
 
     }
 
     @Override
-    boolean isEnded() {
+    public boolean isEnded() {
         return false;
     }
 }

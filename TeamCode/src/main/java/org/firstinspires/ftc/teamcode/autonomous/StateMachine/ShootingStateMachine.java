@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.autonomous.StateMachine;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Hardware;
@@ -70,12 +69,12 @@ public class ShootingStateMachine {
             this.robot = robot;
         }
         @Override
-        void enter() {
+        public void enter() {
             robot.launcher.setVelocity(Hardware.defaultVelocity);
         }
 
         @Override
-        boolean isEnded() {
+        public boolean isEnded() {
             return (Math.abs(robot.launcher.getVelocity()- Hardware.defaultVelocity)<=10);
         }
     }
@@ -90,7 +89,7 @@ public class ShootingStateMachine {
             telemetry = _telemetry;
         }
         @Override
-        void enter() {
+        public void enter() {
             if(robot.transfer.getTargetPosition() != TRANSFER_POS_2) {
                 transferAtPos2 = true;
             }else{
@@ -107,14 +106,15 @@ public class ShootingStateMachine {
         }
 
         @Override
-        void update() {
+        public boolean update() {
             telemetry.addData("currentPosition: ", robot.transfer.getCurrentPosition());
             telemetry.addData("transferAtPos2: ", transferAtPos2);
             super.update();
+            return false;
         }
 
         @Override
-        boolean isEnded() {
+        public boolean isEnded() {
             if(transferAtPos2){
                 return robot.transfer.getCurrentPosition()<TRANSFER_POS_2+10 && robot.transfer.getCurrentPosition()>TRANSFER_POS_2-10;
             }else{

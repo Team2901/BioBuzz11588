@@ -6,7 +6,6 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathBuilder;
 import com.pedropathing.paths.PathChain;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.hardware.Hardware;
 
@@ -31,7 +30,7 @@ happen because this class in itself doesn't have the code we want to run on the 
 acts as a container for the order we want that code to run in. The states are what actually contain
 the code we want to the robot to enact.
  */
-class StateMachine {
+public class StateMachine {
     Follower follower;
     // The index for the state in order which the system is currently in
     int orderIndex;
@@ -117,12 +116,12 @@ class StateMachine {
             this.robot = robot;
         }
         @Override
-        void enter() {
+        public void enter() {
             robot.move(y, k*x);
         }
 
         @Override
-        boolean isEnded() {
+        public boolean isEnded() {
             return !robot.isDriveBusy();
         }
     }
@@ -150,7 +149,7 @@ class StateMachine {
             timeOutConstraint = 200.0;
         }
         @Override
-        void enter() {
+        public void enter() {
             PathBuilder builder;
             Supplier<PathChain> pathChain;
             builder =follower.pathBuilder() //120, 120, 45
@@ -178,14 +177,15 @@ class StateMachine {
         }
 
         @Override
-        boolean isEnded() {
+        public boolean isEnded() {
             return !follower.isBusy();
         }
 
         @Override
-        void update() {
+        public boolean update() {
             super.update();
             follower.update();
+            return false;
         }
     }
 }
