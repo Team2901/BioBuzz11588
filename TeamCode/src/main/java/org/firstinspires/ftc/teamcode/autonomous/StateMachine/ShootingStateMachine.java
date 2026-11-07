@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.autonomous.StateMachine;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Hardware;
@@ -107,10 +106,11 @@ public class ShootingStateMachine {
         }
 
         @Override
-        public void update() {
+        public boolean update() {
             telemetry.addData("currentPosition: ", robot.transfer.getCurrentPosition());
             telemetry.addData("transferAtPos2: ", transferAtPos2);
             super.update();
+            return false;
         }
 
         @Override

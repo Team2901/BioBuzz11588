@@ -6,7 +6,6 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathBuilder;
 import com.pedropathing.paths.PathChain;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.hardware.Hardware;
 
@@ -183,9 +182,10 @@ public class StateMachine {
         }
 
         @Override
-        public void update() {
+        public boolean update() {
             super.update();
             follower.update();
+            return false;
         }
     }
 }
