@@ -2,11 +2,11 @@ package org.firstinspires.ftc.teamcode.autonomous.StateMachine;
 
 public class Idle extends MyState {
     @Override
-    void enter() {
+    public void enter() {
     }
 
     @Override
-    boolean isEnded() {
+    public boolean isEnded() {
         return true;
     }
 }
