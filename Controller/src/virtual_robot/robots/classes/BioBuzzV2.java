@@ -18,7 +18,7 @@ import virtual_robot.controller.BotConfig;
  *   "turret"    a 312 RPM goBILDA motor through a 5:1 reduction to the turret ring
  *               (2688 encoder ticks per turret revolution, about 62 RPM at full power)
  *
- * The turret can turn one full revolution: from 180 degrees clockwise to 180 degrees
+ * The turret can turn two full revolutions: from 360 degrees clockwise to 360 degrees
  * counter-clockwise of facing forward, where it stops as if against a hard stop (a real turret
  * would be limited this way to keep from winding up its wiring). Positive power turns it
  * counter-clockwise. It starts facing forward, at encoder position 0, when the configuration
@@ -54,8 +54,8 @@ public class BioBuzzV2 extends BioBuzzV1 {
         turretMotor = (DcMotorExImpl) hardwareMap.get(DcMotorEx.class, "turret");
         hardwareMap.setActive(false);
 
-        // One full revolution, half each way from facing forward.
-        turretMotor.setActualPositionLimits(-TURRET_TICKS_PER_REV / 2, TURRET_TICKS_PER_REV / 2);
+        // Two full revolutions, one each way from facing forward.
+        turretMotor.setActualPositionLimits(-TURRET_TICKS_PER_REV, TURRET_TICKS_PER_REV);
         turretMotor.setPositionLimitsEnabled(true);
 
         turret.getTransforms().add(turretRotate);
