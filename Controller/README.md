@@ -223,7 +223,8 @@ which is useful for checking that an autonomous routine is not relying on perfec
 accurate motors.
 
 The **Robot Pose** readout shows the robot's true pose in field coordinates: inches from
-the field centre, X right, Y up, heading 0 facing right. Comparing it with the Pinpoint
+the field centre, X right (toward the audience, which is on the right of the field image), Y up
+(toward the BLUE side), heading 0 facing right. Comparing it with the Pinpoint
 shows how far odometry has drifted.
 
 Robots start at the preset named by `Config.DEFAULT_PRESET_POSE` (currently `"Origin"`,

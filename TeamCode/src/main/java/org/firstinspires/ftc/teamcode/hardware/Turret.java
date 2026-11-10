@@ -47,8 +47,8 @@ public class Turret {
     }
     private void setAngle(){
         double newAngle;
-        if(robot.pinpoint.getPosition().getY(DistanceUnit.INCH) > 0){
-            newAngle = findNewAngle(-12,12);
+        if(robot.pinpoint.getPosition().getX(DistanceUnit.INCH) > 0){
+            newAngle = findNewAngle(12,-12);
         }else{
             newAngle = findNewAngle(-12,-12);
         }
@@ -66,8 +66,8 @@ public class Turret {
     }
     public void update(){
         double desiredAngle;
-        if(robot.pinpoint.getPosition().getY(DistanceUnit.INCH) > 0){
-            desiredAngle = findNewAngle(-12,12);
+        if(robot.pinpoint.getPosition().getX(DistanceUnit.INCH) > 0){
+            desiredAngle = findNewAngle(12,-12);
         }else{
             desiredAngle = findNewAngle(-12,-12);
         }

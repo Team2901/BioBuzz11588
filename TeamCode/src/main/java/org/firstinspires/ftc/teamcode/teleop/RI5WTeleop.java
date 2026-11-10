@@ -74,7 +74,7 @@ public class RI5WTeleop extends OpMode {
         robot.update();
         //DRIVEBASE
         //update joysticks and robot.speed
-        double joyStickAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.toRadians(90);
+        double joyStickAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x);
         double joyStickMagnitude = Math.hypot(-gamepad1.left_stick_y, gamepad1.left_stick_x);
         double moveAngle = joyStickAngle-robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
         double y = robot.speedV * joyStickMagnitude*Math.sin(moveAngle);

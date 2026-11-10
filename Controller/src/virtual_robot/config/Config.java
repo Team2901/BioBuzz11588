@@ -77,19 +77,19 @@ public class Config {
 
     /**
      * Poses offered by the simulator's Move Robot dropdown, in the order listed. They are in the
-     * same frame as the Robot Pose readout: origin at field centre, X right, Y up the screen,
-     * heading 0 facing +X, counter-clockwise positive. The four starting poses are the Decode
-     * alliance starting spots; the simulator does not read team code, so keep them in step with
-     * any starting poses the team's autonomous uses.
+     * same frame as the Robot Pose readout: origin at field centre, X right (toward the audience),
+     * Y up the screen (toward the BLUE side), heading 0 facing +X, counter-clockwise positive.
+     * The four starting poses are the Decode alliance starting spots; the simulator does not read
+     * team code, so keep them in step with any starting poses the team's autonomous uses.
      */
     public static final Map<String, Pose2D> PRESET_POSES;
     static {
         Map<String, Pose2D> poses = new LinkedHashMap<>();
         poses.put("Origin", pose(0, 0, 0));
-        poses.put("Red Audience", pose(-12, -72 + 9, 90));
-        poses.put("Red Far", pose(-12, 72 - 9, -90));
-        poses.put("Blue Audience", pose(12, -72 + 9, 90));
-        poses.put("Blue Far", pose(12, 72 - 9, -90));
+        poses.put("Red Audience", pose(72 - 9, -12, 180));
+        poses.put("Red Far", pose(-72 + 9, -12, 0));
+        poses.put("Blue Audience", pose(72 - 9, 12, 180));
+        poses.put("Blue Far", pose(-72 + 9, 12, 0));
         PRESET_POSES = Collections.unmodifiableMap(poses);
     }
 

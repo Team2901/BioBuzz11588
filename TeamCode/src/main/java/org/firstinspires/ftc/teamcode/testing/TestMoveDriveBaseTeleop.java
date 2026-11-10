@@ -12,11 +12,12 @@ import org.firstinspires.ftc.teamcode.hardware.Hardware;
 @TeleOp(group = "test")
 public class TestMoveDriveBaseTeleop extends OpMode {
     public Hardware robot = new Hardware();
-    public ExampleTurret turret = new ExampleTurret(hardwareMap, telemetry);
+    public ExampleTurret turret;
 
     @Override
     public void init() {
         robot.init(hardwareMap, telemetry);
+        turret = new ExampleTurret(hardwareMap, telemetry);
     }
 
     @Override
@@ -31,21 +32,22 @@ public class TestMoveDriveBaseTeleop extends OpMode {
 
         double leftJoyRadius = Math.hypot(leftJoyX, leftJoyY);
         double leftJoyAngleDegrees = Math.toDegrees(Math.atan2(leftJoyY, leftJoyX));
-        double targetMoveRelRobotAngleDegrees = leftJoyAngleDegrees - 90;
-
-        double forwardX = Math.cos(Math.toRadians(targetMoveRelRobotAngleDegrees)) * leftJoyRadius;
-        double leftY = Math.sin(Math.toRadians(targetMoveRelRobotAngleDegrees)) * leftJoyRadius;
 
         if (gamepad1.a) {
             robot.moveTowardsRelField(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0), currentPose);
         } else {
-            robot.movePowerRelRobot(forwardX, leftY, -rightJoyX);
+            double forwardX = Math.cos(Math.toRadians(leftJoyAngleDegrees)) * leftJoyRadius;
+            double leftY = Math.sin(Math.toRadians(leftJoyAngleDegrees)) * leftJoyRadius;
+            robot.movePowerRelField(forwardX, leftY, -rightJoyX, currentPose.getHeading(AngleUnit.DEGREES));
         }
 
         // if gamepad2 right stick x is pressed, turn the turret continually in that direction (counter clockwise or clockwise)
         // else if gamepad2 left stick is pressed, turn the turret to face that direction (relative to the field)
         // else turn the turret to face the origin of the field (0,0,0)
         // TODO implement
+        turret.turretMotor.setPower(gamepad2.right_stick_x);
+        telemetry.addData("Turret Power", turret.turretMotor.getPower());
+        telemetry.addData("Right stick X", gamepad2.right_stick_x);
 
         telemetry.addData("current pose", "(%.2f, %.2f, %.2f)",
             currentPose.getX(DistanceUnit.INCH),
