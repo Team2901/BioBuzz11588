@@ -6,11 +6,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.hardware.ExampleTurret;
 import org.firstinspires.ftc.teamcode.hardware.Hardware;
 
 @TeleOp(group = "test")
 public class TestMoveDriveBaseTeleop extends OpMode {
     public Hardware robot = new Hardware();
+    public ExampleTurret turret = new ExampleTurret(hardwareMap, telemetry);
 
     @Override
     public void init() {
@@ -19,7 +21,8 @@ public class TestMoveDriveBaseTeleop extends OpMode {
 
     @Override
     public void loop() {
-        robot.update();
+        //robot.update();
+        robot.pinpoint.update();
         Pose2D currentPose = robot.pinpoint.getPosition();
 
         double leftJoyY = -gamepad1.left_stick_y;
@@ -45,9 +48,12 @@ public class TestMoveDriveBaseTeleop extends OpMode {
         // TODO implement
 
         telemetry.addData("current pose", "(%.2f, %.2f, %.2f)",
-                currentPose.getX(DistanceUnit.INCH),
-                currentPose.getY(DistanceUnit.INCH),
-                currentPose.getHeading(AngleUnit.DEGREES));
+            currentPose.getX(DistanceUnit.INCH),
+            currentPose.getY(DistanceUnit.INCH),
+            currentPose.getHeading(AngleUnit.DEGREES));
+
+        telemetry.addData("current heading relative to robot", turret.getHeadingRelRobot());
+        telemetry.addData("current heading relative to field", turret.getHeadingRelField(currentPose));
     }
 }
 

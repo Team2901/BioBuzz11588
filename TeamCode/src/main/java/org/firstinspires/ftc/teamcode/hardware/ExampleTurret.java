@@ -179,8 +179,7 @@ public class ExampleTurret {
      * positive is counter-clockwise.
      */
     public double getHeadingRelRobot() {
-        // TODO implement step A
-        return 0;
+        return (360*turretMotor.getCurrentPosition())/turretTicksPerRotation;
     }
 
     /**
