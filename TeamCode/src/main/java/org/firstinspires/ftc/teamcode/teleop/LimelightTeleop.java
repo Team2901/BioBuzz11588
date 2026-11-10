@@ -11,8 +11,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.hardware.Hardware;
 
-import java.util.ArrayList;
-
 @TeleOp(name = "LimelightTeleop")
 public class LimelightTeleop extends OpMode {
     Hardware robot = new Hardware();
@@ -42,8 +40,8 @@ public class LimelightTeleop extends OpMode {
         return distance;
     }
     public void loop() {
-        double y = -robot.speed * gamepad1.left_stick_y;
-        double x = robot.speed * gamepad1.left_stick_x;
+        double y = -robot.speedV * gamepad1.left_stick_y;
+        double x = robot.speedV * gamepad1.left_stick_x;
 
         // Detect yellows
         if(gamepad1.a) {
@@ -65,7 +63,7 @@ public class LimelightTeleop extends OpMode {
             limelight3A.pipelineSwitch(2);
         }
 
-        Double turnToAngleSpeed = robot.getTurnToAngleSpeed(targetTurnAngle);
+        Double turnToAngleSpeed = robot.getTurnToAngleSpeed(targetTurnAngle, false);
 
         if (turnToAngleSpeed != null && turnToAngleSpeed == 0) {
             targetTurnAngle = null;

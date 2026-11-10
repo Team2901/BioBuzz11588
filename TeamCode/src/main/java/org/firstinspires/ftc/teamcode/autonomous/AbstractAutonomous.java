@@ -81,7 +81,7 @@ public abstract class AbstractAutonomous extends LinearOpMode{
 
     public void turnToAngle(double turnAngle) {
 
-        double turnPower = robot.getTurnToAngleSpeed(turnAngle);
+        double turnPower = robot.getTurnToAngleSpeed(turnAngle, false);
 
         // turn the robot until it reaches the desired angle
         while (opModeIsActive() && turnPower != 0) {
@@ -90,7 +90,7 @@ public abstract class AbstractAutonomous extends LinearOpMode{
             robot.backLeft.setVelocity(-turnPower);
             robot.backRight.setVelocity(turnPower);
 
-            turnPower = robot.getTurnToAngleSpeed(turnAngle);
+            turnPower = robot.getTurnToAngleSpeed(turnAngle, false);
             telemetryLog(robot.frontLeft);
         }
         robot.frontLeft.setVelocity(0);

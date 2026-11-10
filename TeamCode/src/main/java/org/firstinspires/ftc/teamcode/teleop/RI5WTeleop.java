@@ -77,8 +77,8 @@ public class RI5WTeleop extends OpMode {
         double joyStickAngle = Math.atan2(-gamepad1.left_stick_y, gamepad1.left_stick_x) - Math.toRadians(90);
         double joyStickMagnitude = Math.hypot(-gamepad1.left_stick_y, gamepad1.left_stick_x);
         double moveAngle = joyStickAngle-robot.imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
-        double y = robot.speed * joyStickMagnitude*Math.sin(moveAngle);
-        double x = robot.speed * joyStickMagnitude*Math.cos(moveAngle);
+        double y = robot.speedV * joyStickMagnitude*Math.sin(moveAngle);
+        double x = robot.speedV * joyStickMagnitude*Math.cos(moveAngle);
 
         YawPitchRollAngles orientation = robot.getOrientation();
 
@@ -86,7 +86,7 @@ public class RI5WTeleop extends OpMode {
 
         //update turning power based on right stick x
         if(gamepad1.right_stick_x != 0){
-            turningPower = .75 * gamepad1.right_stick_x * robot.speed;
+            turningPower = .75 * gamepad1.right_stick_x * robot.speedV;
         }
         else {
             turningPower = 0;

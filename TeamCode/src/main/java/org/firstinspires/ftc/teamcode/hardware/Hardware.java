@@ -75,7 +75,8 @@ public class Hardware {
     public double robotTurnError;
     public double robotTurnPower;
     //Scalar for calculating robot velocity
-    public double speed = 3000;
+    public double speedV = 3000;
+    public double speedP = 1;
 
     public double getAngle() {
         YawPitchRollAngles angles = imu.getRobotYawPitchRollAngles();
@@ -553,9 +554,7 @@ public class Hardware {
      * @param turnAngle angle to turn to
      * @return turn power
      */
-    public Double getTurnToAngleSpeed(Double turnAngle) {
-        // TODO: make work for both power and velocity
-
+    public Double getTurnToAngleSpeed(Double turnAngle, boolean usePower) {
         if (turnAngle == null) {
             return null;
         }
@@ -568,6 +567,12 @@ public class Hardware {
         // If within TOLERANCE (1 degree) stop movement
         if (Math.abs(turnError) <= TOLERANCE) {
             return 0.0;
+        }
+        double speed;
+        if(usePower){
+            speed = speedP;
+        }else{
+            speed = speedV;
         }
         //calculate turn power based on turnError divided by the scalar 90 and multiplied by the speed
         if (turnError >= 0) {
@@ -584,9 +589,7 @@ public class Hardware {
         telemetry.addData("Error:", turnError);
         return turnPower;
     }
-    public Double getTurnToAngleSpeedTurret(Double turnAngle) {
-        // TODO: make work for both power and velocity
-
+    public Double getTurnToAngleSpeedTurret(Double turnAngle, boolean usePower) {
         if (turnAngle == null) {
             return null;
         }
@@ -599,6 +602,12 @@ public class Hardware {
         // If within TOLERANCE (1 degree) stop movement
         if (Math.abs(turnError) <= TOLERANCE) {
             return 0.0;
+        }
+        double speed;
+        if(usePower){
+            speed = speedP;
+        }else{
+            speed = speedV;
         }
         //calculate turn power based on turnError divided by the scalar 90 and multiplied by the speed
         if (turnError >= 0) {
@@ -659,7 +668,7 @@ public class Hardware {
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        double turnPower = getTurnToAngleSpeed(turnAngle);
+        double turnPower = getTurnToAngleSpeed(turnAngle, false);
         frontLeft.setVelocity(-turnPower);
         frontRight.setVelocity(turnPower);
         backLeft.setVelocity(-turnPower);

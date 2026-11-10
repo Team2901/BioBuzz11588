@@ -11,7 +11,7 @@ public class TurnAutoTest extends AbstractAutonomous {
     public void runOpMode() throws InterruptedException {
         robot.init(this.hardwareMap, telemetry);
         waitForStart();
-        while(opModeIsActive() && robot.getTurnToAngleSpeed(180.0) != 0){
+        while(opModeIsActive() && robot.getTurnToAngleSpeed(180.0, false) != 0){
             if(gamepad1.xWasPressed()){
                 runMotor = !runMotor;
             }
@@ -21,7 +21,7 @@ public class TurnAutoTest extends AbstractAutonomous {
             telemetry.addLine("X = toggle runMotor");
             telemetry.addData("runMotor", runMotor);
             telemetry.addData("Current Angle", robot.getAngle());
-            telemetry.addData("Turn Speed", robot.getTurnToAngleSpeed(180.0));
+            telemetry.addData("Turn Speed", robot.getTurnToAngleSpeed(180.0, false));
             telemetry.update();
         }
     }

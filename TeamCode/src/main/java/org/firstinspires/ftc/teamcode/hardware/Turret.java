@@ -62,7 +62,7 @@ public class Turret {
         }
         turretMotor.setTargetPosition(turretMotor.getCurrentPosition() + (int) difWrapped);
         turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        turretMotor.setVelocity(robot.getTurnToAngleSpeedTurret(newAngle));
+        turretMotor.setVelocity(robot.getTurnToAngleSpeedTurret(newAngle, false));
     }
     public void update(){
         double desiredAngle;

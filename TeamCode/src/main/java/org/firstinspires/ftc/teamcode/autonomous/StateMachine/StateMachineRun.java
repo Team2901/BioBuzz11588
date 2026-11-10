@@ -29,7 +29,7 @@ public class StateMachineRun extends AbstractAutonomous {
             moveSystem.update();
             telemetry.addData("Current State Move", moveSystem.getState());
             telemetry.addData("IMU", robot.imu.getRobotYawPitchRollAngles());
-            telemetry.addData("Turn To Angle Speed Degree 0", robot.getTurnToAngleSpeed(0.0));
+            telemetry.addData("Turn To Angle Speed Degree 0", robot.getTurnToAngleSpeed(0.0, false));
             telemetry.update();
         }
     }
