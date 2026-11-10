@@ -584,6 +584,37 @@ public class Hardware {
         telemetry.addData("Error:", turnError);
         return turnPower;
     }
+    public Double getTurnToAngleSpeedTurret(Double turnAngle) {
+        // TODO: make work for both power and velocity
+
+        if (turnAngle == null) {
+            return null;
+        }
+
+        //robot.getAngle is between -180 and 180, starting at 0
+        double turnPower = 0;
+        double targetAngle = turnAngle;
+        double startAngle = turret.getAngle();
+        double turnError = AngleUnit.normalizeDegrees(targetAngle - startAngle);
+        // If within TOLERANCE (1 degree) stop movement
+        if (Math.abs(turnError) <= TOLERANCE) {
+            return 0.0;
+        }
+        //calculate turn power based on turnError divided by the scalar 90 and multiplied by the speed
+        if (turnError >= 0) {
+            turnPower = speed * (turnError / 90);
+            if (turnPower > speed) {
+                turnPower = speed;
+            }
+        } else if (turnError < 0) {
+            turnPower = speed * (turnError / 90);
+            if (turnPower < -speed) {
+                turnPower = -speed;
+            }
+        }
+        telemetry.addData("Turret Turn Error:", turnError);
+        return turnPower;
+    }
 
     public YawPitchRollAngles getOrientation() {
         return imu.getRobotYawPitchRollAngles();

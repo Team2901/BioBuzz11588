@@ -26,16 +26,17 @@ public class Turret {
             turret = new MockDcMotor();
             telemetry.addLine("Can't find turret: making a mock");
         }
-        turret.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
     public double findNewAngle(int x, int y){
         Pose2D poseB = new Pose2D(DistanceUnit.INCH,x,y, AngleUnit.DEGREES,0.0);
-        Pose2D newPose = robot.pose2DDelta(poseB, robot.pinpoint.getPosition());
+        Pose2D currentPose = robot.pinpoint.getPosition();
+        Pose2D newPose = robot.pose2DDelta(poseB, currentPose);
         double difX = newPose.getX(DistanceUnit.INCH);
         double difY = newPose.getY(DistanceUnit.INCH);
-        double newAngle = Math.atan2(difY,difX);
-        newAngle = Math.toDegrees(newAngle);
-        return newAngle;
+        double fieldAngle = Math.atan2(difY,difX);
+        fieldAngle = Math.toDegrees(fieldAngle);
+        double robotHeading = currentPose.getHeading(AngleUnit.DEGREES);
+        return robot.angleDiffDegrees(fieldAngle, robotHeading);
     }
     public double getAngle(){
         return 360*(turret.getCurrentPosition()%TICKS_PER_TURRET_REVOLUTION)/(TICKS_PER_TURRET_REVOLUTION);
@@ -43,7 +44,6 @@ public class Turret {
     }
     public void resetEncoder(){
         turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        turret.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
     private void setAngle(){
         double newAngle;
@@ -55,18 +55,25 @@ public class Turret {
         double ticks = (newAngle/360)*TICKS_PER_TURRET_REVOLUTION;
         double posDifference = ticks-turret.getCurrentPosition();
         double difWrapped = posDifference%TICKS_PER_TURRET_REVOLUTION;
-        if(difWrapped>TICKS_PER_TURRET_REVOLUTION/2){
-            turret.setTargetPosition((int) (difWrapped-TICKS_PER_TURRET_REVOLUTION));
-        }else if(difWrapped<TICKS_PER_TURRET_REVOLUTION/2){
-            turret.setTargetPosition((int) (difWrapped+TICKS_PER_TURRET_REVOLUTION));
-        }else{
-            turret.setTargetPosition((int) difWrapped);
+        if(difWrapped > TICKS_PER_TURRET_REVOLUTION/2){
+            difWrapped -= TICKS_PER_TURRET_REVOLUTION;
+        }else if(difWrapped < -TICKS_PER_TURRET_REVOLUTION/2){
+            difWrapped += TICKS_PER_TURRET_REVOLUTION;
         }
-        turret.setVelocity(robot.getTurnToAngleSpeed(newAngle));
+        turret.setTargetPosition(turret.getCurrentPosition() + (int) difWrapped);
+        turret.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        turret.setVelocity(robot.getTurnToAngleSpeedTurret(newAngle));
     }
     public void update(){
+        double desiredAngle;
+        if(robot.pinpoint.getPosition().getY(DistanceUnit.INCH) > 0){
+            desiredAngle = findNewAngle(-12,12);
+        }else{
+            desiredAngle = findNewAngle(-12,-12);
+        }
         setAngle();
         telemetry.addData("Current turret angle", robot.turret.getAngle());
-        telemetry.addData("Desired angle", findNewAngle(-12, -12));
+        telemetry.addData("Desired angle", desiredAngle);
+        telemetry.addData("Turret ticks", turret.getCurrentPosition());
     }
 }
