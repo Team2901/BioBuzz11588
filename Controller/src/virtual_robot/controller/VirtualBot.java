@@ -11,7 +11,12 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
+import com.qualcomm.hardware.bosch.BNO055IMUImpl;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IMU;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Transform;
@@ -223,6 +228,41 @@ public abstract class VirtualBot {
         }
 
     }
+
+    /**
+     * Simulate switching the robot off and on again where it now stands. Nothing moves:
+     * the robot, its arms and turret stay put, and only what the electronics remember is
+     * lost. Every motor and dead-wheel encoder stops, with its encoder count at zero at its
+     * current position, mode RUN_WITHOUT_ENCODER and direction FORWARD. Every IMU zeroes
+     * its heading at the robot's current heading. The odometry restarts (see
+     * powerCycleOdometry). Servos keep their position, as an unpowered servo would.
+     * Only called while no OpMode is running.
+     */
+    public synchronized void powerCycle(){
+        for (HardwareDevice device : hardwareMap) {
+            if (device instanceof DcMotor) {
+                DcMotor motor = (DcMotor) device;
+                motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                motor.setPower(0);
+                motor.setDirection(DcMotorSimple.Direction.FORWARD);
+            } else if (device instanceof IMU) {
+                ((IMU) device).resetYaw();
+            } else if (device instanceof BNO055IMUImpl) {
+                // The legacy BNO055 driver has no yaw reset; closing it makes the next
+                // initialize() zero it here, as a freshly powered chip would.
+                ((BNO055IMUImpl) device).close();
+            }
+        }
+        powerCycleOdometry();
+    }
+
+    /**
+     * The odometry part of powerCycle: the Pinpoint (and OTOS where present) restarts reading
+     * (0, 0, heading 0) at the current pose, with its pod encoder counts at zero. Bots without
+     * odometry do nothing.
+     */
+    protected void powerCycleOdometry(){}
 
     public void removeFromDisplay(Pane fieldPane){
         fieldPane.getChildren().remove(displayGroup);

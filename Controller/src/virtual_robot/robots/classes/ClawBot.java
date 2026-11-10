@@ -199,12 +199,24 @@ public class ClawBot extends BasicTwoWheelPhysicsBase {
     }
 
     /**
-     * When the robot is placed by clicking the field, make that spot the Pinpoint's new
-     * origin (0, 0, heading 0) and zero its encoders, matching the mecanum bots.
+     * When the robot is placed by clicking the field, have the Pinpoint report its true field
+     * pose (see CommonOdometry.resetToFieldFrame) and zero its encoders, matching the mecanum bots.
      */
     @Override
     public synchronized void positionWithMouseClick(MouseEvent arg) {
         super.positionWithMouseClick(arg);
+        updateOdometryAtRest();
+        odo.resetToFieldFrame();
+        pinpoint.internalUpdate(false, false);
+        pinpoint.resetEncoders();
+    }
+
+    /**
+     * Switch the robot off and on where it stands: the odometry restarts at (0, 0, heading 0)
+     * here, with its pod encoder counts at zero.
+     */
+    @Override
+    protected synchronized void powerCycleOdometry() {
         updateOdometryAtRest();
         odo.setPosition(new Pose2D(DistanceUnit.METER, 0, 0, AngleUnit.RADIANS, 0));
         pinpoint.internalUpdate(false, false);

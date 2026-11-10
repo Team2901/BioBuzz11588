@@ -320,6 +320,21 @@ public abstract class DynamicMecanumBase extends VirtualBot {
                 new Pose2D(DistanceUnit.METER, x/VirtualField.PIXELS_PER_METER, y/VirtualField.PIXELS_PER_METER, AngleUnit.RADIANS, headingRadians),
                 new Pose2D(DistanceUnit.METER, 0, 0, AngleUnit.RADIANS, 0), new Pose2D(DistanceUnit.METER, 0, 0, AngleUnit.RADIANS, 0)
         );
+        odo.resetToFieldFrame();
+        goBildaPinpointDriverInternal.internalUpdate(false, false);
+        goBildaPinpointDriverInternal.resetEncoders();
+    }
+
+    /**
+     * Switch the robot off and on where it stands: the odometry restarts at (0, 0, heading 0)
+     * here, with its pod encoder counts at zero.
+     */
+    @Override
+    protected synchronized void powerCycleOdometry() {
+        odo.update(
+                new Pose2D(DistanceUnit.METER, x/VirtualField.PIXELS_PER_METER, y/VirtualField.PIXELS_PER_METER, AngleUnit.RADIANS, headingRadians),
+                new Pose2D(DistanceUnit.METER, 0, 0, AngleUnit.RADIANS, 0), new Pose2D(DistanceUnit.METER, 0, 0, AngleUnit.RADIANS, 0)
+        );
         odo.setPosition(new Pose2D(DistanceUnit.METER, 0, 0, AngleUnit.RADIANS, 0));
         goBildaPinpointDriverInternal.internalUpdate(false, false);
         goBildaPinpointDriverInternal.resetEncoders();

@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorExImpl;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.ServoImpl;
 import com.qualcomm.robotcore.hardware.configuration.MotorType;
 
 import org.dyn4j.dynamics.Body;
@@ -21,6 +22,7 @@ import javafx.scene.Group;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polyline;
 import javafx.scene.transform.Rotate;
 import virtual_robot.config.Config;
@@ -41,10 +43,13 @@ import virtual_robot.controller.VirtualField;
  * pair, each pivoting in place about its own axis and always pointing the same way; the casters just
  * swivel to follow.
  *
- * This is NOT a differential drive. The two driven wheels are the same distance from the chassis
- * center on opposite sides of it, so equal power on both is two equal parallel forces whose torques
- * about the center cancel: a pure translation. The chassis holds a fixed heading and simply moves in
- * whatever direction the wheels are pointed. Steering is the turn motor's job alone.
+ * The two driven wheels are the same distance from the chassis center on opposite sides of it, so
+ * equal power on both is two equal parallel forces whose torques about the center cancel: a pure
+ * translation in whatever direction the wheels are pointed. Unequal power also turns the chassis, as
+ * much as the wheels are lined up to push around the center: fully at a pod angle of 45 degrees
+ * (wheels perpendicular to the line through both of them), not at all at -45 degrees (wheels
+ * pointing along that line, where any difference just scrubs). Green forward with gold backward at
+ * 45 degrees spins the bot counter-clockwise in place.
  *
  * TURRET ANGLE CONVENTION: 0 is straight forward (the LIME edge of the chassis), increasing
  * counter-clockwise when viewed from above, and it wraps continuously — the pod can spin forever.
@@ -52,8 +57,10 @@ import virtual_robot.controller.VirtualField;
  * turnMotor.setDirection(REVERSE) in the team's hardware class flips it here too, because the turret
  * angle is read from the motor's physical shaft position.
  *
- * The pen's track across the field is drawn as a Polyline underneath the robot. It is cleared when the
- * OpMode stops and when the robot is repositioned with the mouse.
+ * The pen is raised and lowered by a servo ("penServo"): position 0 is up, 1 is down. It only draws
+ * while it is down, and each time it goes down it starts a new line. The pen dot on the robot is dark
+ * while the pen is down and pale while it is up. The drawing sits underneath the robot, and is cleared
+ * when the OpMode stops and when the robot is repositioned with the mouse.
  */
 @BotConfig(name = "Draw Bot", filename = "draw_bot")
 public class DrawBot extends VirtualBot {
@@ -65,15 +72,22 @@ public class DrawBot extends VirtualBot {
     private static final double TURN_GEAR_RATIO = 10.0;
 
     /*
-     * Potentiometer calibration. These mirror POT_MAX and POT_FORWARD_VOLTAGE in DrawBotTeleop: the
+     * Potentiometer calibration. These mirror POT_MAX_VOLTAGE and POT_FORWARD_VOLTAGE in the team's DrawBot hardware class: the
      * pot is a full-turn 3.3V unit whose wiper is positioned so that a pod pointing straight forward
      * reads 3.08V. Voltage climbs with turret angle and wraps through the pot's dead zone.
      */
     private static final double POT_MAX_VOLTAGE = 3.3;
     private static final double POT_VOLTAGE_AT_TURRET_ZERO = 3.08;
 
-    // Stop the pen trail from growing without bound during a long OpMode. Two doubles per point.
+    // Stop the drawing from growing without bound during a long OpMode. Two doubles per point.
     private static final int MAX_TRAIL_POINTS = 5000;
+
+    // The pen counts as down once penServo is past this position (0 = up, 1 = down).
+    private static final double PEN_DOWN_THRESHOLD = 0.5;
+
+    // Colour of the pen dot on the robot while the pen is down and while it is up.
+    private static final Color PEN_DOWN_COLOR = Color.web("#111111");
+    private static final Color PEN_UP_COLOR = Color.web("#d0d0d0");
 
     // Only extend the trail once the bot has actually moved this far (pixels), to keep the point list sane.
     private static final double MIN_TRAIL_SEGMENT_PIXELS = 1.0;
@@ -88,6 +102,9 @@ public class DrawBot extends VirtualBot {
     private static final double CASTER_TL_X = 22.0, CASTER_TL_Y = 22.0;
     private static final double CASTER_BR_X = 53.0, CASTER_BR_Y = 53.0;
 
+    // Size of draw_bot.fxml's coordinate space, and its center, which is the chassis center.
+    private static final double FXML_SIZE = 75.0, FXML_CENTER = 37.5;
+
     // Below this speed (m/s) there is nothing to align a caster with, so it keeps the angle it had.
     private static final double CASTER_ALIGN_MIN_SPEED = 0.01;
 
@@ -97,6 +114,7 @@ public class DrawBot extends VirtualBot {
     private DcMotorExImpl greenDriveMotor = null;
     private DcMotorExImpl goldDriveMotor = null;
     private AnalogInput pot = null;
+    private ServoImpl penServo = null;
     private BNO055IMUImpl imu = null;
     private BNO055IMUNew imuNew = null;
 
@@ -105,6 +123,9 @@ public class DrawBot extends VirtualBot {
     @FXML Group goldWheel;
     @FXML Group casterTopLeft;
     @FXML Group casterBottomRight;
+
+    // The pen dot on the robot, loaded via its fx:id property.
+    @FXML Circle pen;
 
     // Each wheel turns about its own pivot rather than about the middle of the robot.
     private final Rotate greenWheelRotate = new Rotate(0, GREEN_WHEEL_X, GREEN_WHEEL_Y);
@@ -121,8 +142,17 @@ public class DrawBot extends VirtualBot {
     private double wheelCircumference;      // pixels
     private double maxDriveForce;           // Newtons: most the floor can push the bot with
     private double maxDriveTorque;          // Newton-meters
+    private double drivenWheelRadius;       // meters, from chassis center to each driven wheel
 
-    private Polyline penTrail = null;
+    // Every line the pen has drawn, one Polyline per time the pen went down.
+    private Group penTrail = null;
+
+    // The line being drawn now, or null while the pen is up. Only touched on the FX thread.
+    private Polyline currentStroke = null;
+    private int trailPointCount = 0;
+
+    // Updated in updateStateAndSensors(), consumed in updateDisplay().
+    private volatile boolean penDown = false;
 
     public DrawBot() {
         super();
@@ -137,6 +167,7 @@ public class DrawBot extends VirtualBot {
         greenDriveMotor = (DcMotorExImpl) hardwareMap.get(DcMotorEx.class, "greenDriveMotor");
         goldDriveMotor = (DcMotorExImpl) hardwareMap.get(DcMotorEx.class, "goldDriveMotor");
         pot = hardwareMap.get(AnalogInput.class, "pot");
+        penServo = (ServoImpl) hardwareMap.servo.get("penServo");
         imu = hardwareMap.get(BNO055IMUImpl.class, "imu");
         imuNew = hardwareMap.get(BNO055IMUNew.class, "imu");
         hardwareMap.setActive(false);
@@ -148,6 +179,9 @@ public class DrawBot extends VirtualBot {
         maxDriveForce = Config.FIELD_FRICTION_COEFF * 9.8 * mass;
         maxDriveTorque = maxDriveForce * halfBotWidth / VirtualField.PIXELS_PER_METER;
 
+        drivenWheelRadius = Math.hypot(GREEN_WHEEL_X - FXML_CENTER, GREEN_WHEEL_Y - FXML_CENTER)
+                * botWidth / FXML_SIZE / VirtualField.PIXELS_PER_METER;
+
         greenWheel.getTransforms().add(greenWheelRotate);
         goldWheel.getTransforms().add(goldWheelRotate);
         casterTopLeft.getTransforms().add(casterTopLeftRotate);
@@ -158,9 +192,7 @@ public class DrawBot extends VirtualBot {
          * VirtualRobotController.getVirtualBotInstance() calls setUpDisplayGroup(). That ordering
          * puts the trail underneath the robot for free.
          */
-        penTrail = new Polyline();
-        penTrail.setStroke(Color.CRIMSON);
-        penTrail.setStrokeWidth(1.5);
+        penTrail = new Group();
         penTrail.setMouseTransparent(true);
         fieldPane.getChildren().add(penTrail);
     }
@@ -171,6 +203,7 @@ public class DrawBot extends VirtualBot {
         hardwareMap.put("greenDriveMotor", new DcMotorExImpl(MOTOR_TYPE, motorController0, 1));
         hardwareMap.put("goldDriveMotor", new DcMotorExImpl(MOTOR_TYPE, motorController0, 2));
         hardwareMap.put("pot", new AnalogInput(POT_MAX_VOLTAGE));
+        hardwareMap.put("penServo", new ServoImpl());
         hardwareMap.put("imu", new BNO055IMUImpl(this, 10));
         hardwareMap.put("imu", new BNO055IMUNew(this, 10));
     }
@@ -187,6 +220,8 @@ public class DrawBot extends VirtualBot {
         turnMotor.update(millis);
         greenDriveMotor.update(millis);
         goldDriveMotor.update(millis);
+
+        penDown = penServo.getInternalPosition() > PEN_DOWN_THRESHOLD;
 
         /*
          * Pod angle follows the turn motor's physical shaft position, which already accounts for
@@ -215,15 +250,25 @@ public class DrawBot extends VirtualBot {
         if (MOTOR_TYPE.REVERSED && !goldRev || !MOTOR_TYPE.REVERSED && goldRev) goldWheelSpeed = -goldWheelSpeed;
 
         /*
-         * Both driven wheels always point the same way, so only their average drives the bot. Any
-         * difference between them would just scrub against the turn motor, and is ignored.
+         * Both driven wheels always point the same way, so their average drives the bot along the pod
+         * direction.
          */
         double podSpeed = 0.5 * (greenWheelSpeed + goldWheelSpeed) / VirtualField.PIXELS_PER_METER;
 
         /*
+         * Half the difference between them is how fast each wheel rolls around the center, in
+         * opposite directions. Only the part of that roll perpendicular to the wheel's radius turns the
+         * chassis; the rest scrubs. Green sits front right, at -45 degrees in the pod-angle frame, so
+         * the perpendicular is 45 degrees and cos(turret - 45 degrees) is how much of the roll counts.
+         * Green rolling forward then turns the bot counter-clockwise. This is the least-squares fit of
+         * the wheels' rolling speeds with no sideways slip.
+         */
+        double spinSpeed = 0.5 * (greenWheelSpeed - goldWheelSpeed) / VirtualField.PIXELS_PER_METER;
+        double targetAngularSpeed = spinSpeed * Math.cos(turretRadians - Math.PI / 4.0) / drivenWheelRadius;
+
+        /*
          * Target velocity is podSpeed along the pod's world direction. Robot forward is +Y here, so a
-         * pod angle of zero points along (-sin(heading), cos(heading)). The chassis does not steer, so
-         * the target angular speed is zero.
+         * pod angle of zero points along (-sin(heading), cos(heading)).
          */
         double podWorldAngle = headingRadians + turretRadians;
         Vector2 targetVelocity = new Vector2(-podSpeed * Math.sin(podWorldAngle), podSpeed * Math.cos(podWorldAngle));
@@ -231,16 +276,17 @@ public class DrawBot extends VirtualBot {
         double t = millis / 1000.0;
 
         /*
-         * Force and torque needed to reach that target by the next physics update (F = ma, tau = I*alpha),
-         * capped at what friction with the floor could actually deliver. The force is applied at the body
-         * center, so driving contributes no torque; the torque term only damps out spin picked up from
-         * collisions with walls and game elements.
+         * Force and torque needed to reach those targets by the next physics update (F = ma, tau = I*alpha),
+         * capped at what friction with the floor could actually deliver. With the wheels turning together
+         * the target spin is zero, so the torque term also damps out spin picked up from collisions with
+         * walls and game elements.
          */
         Vector2 force = targetVelocity.difference(chassisBody.getLinearVelocity())
                 .product(chassisBody.getMass().getMass() / t);
         if (force.getMagnitude() > maxDriveForce) force.setMagnitude(maxDriveForce);
 
-        double torque = -chassisBody.getAngularVelocity() * chassisBody.getMass().getInertia() / t;
+        double torque = (targetAngularSpeed - chassisBody.getAngularVelocity())
+                * chassisBody.getMass().getInertia() / t;
         if (Math.abs(torque) > maxDriveTorque) torque = maxDriveTorque * Math.signum(torque);
 
         chassisBody.applyForce(force);
@@ -271,7 +317,7 @@ public class DrawBot extends VirtualBot {
 
     /**
      * Voltage the potentiometer reports for a given pod angle. This is the inverse of
-     * DrawBotTeleop.degreesToPotVoltage(): forward reads POT_VOLTAGE_AT_TURRET_ZERO, and voltage
+     * potVoltageToDegrees() in the team's DrawBot hardware class: forward reads POT_VOLTAGE_AT_TURRET_ZERO, and voltage
      * climbs with angle, wrapping back to zero through the pot's dead zone.
      */
     private static double potVoltageForTurretAngle(double radians) {
@@ -292,20 +338,35 @@ public class DrawBot extends VirtualBot {
         casterTopLeftRotate.setAngle(casterAngle);
         casterBottomRightRotate.setAngle(casterAngle);
 
+        pen.setFill(penDown ? PEN_DOWN_COLOR : PEN_UP_COLOR);
+
         extendPenTrail();
     }
 
     /**
-     * Add the bot's current position to the pen trail, in field pane coordinates. Must run on the FX
-     * thread; updateDisplay() is the only caller.
+     * Add the bot's current position to the line being drawn, in field pane coordinates, if the pen is
+     * down. Lifting the pen ends the line; lowering it starts a new one. Must run on the FX thread;
+     * updateDisplay() is the only caller.
      */
     private void extendPenTrail() {
         if (penTrail == null) return;
 
+        if (!penDown) {
+            currentStroke = null;
+            return;
+        }
+
+        if (currentStroke == null) {
+            currentStroke = new Polyline();
+            currentStroke.setStroke(Color.CRIMSON);
+            currentStroke.setStrokeWidth(1.5);
+            penTrail.getChildren().add(currentStroke);
+        }
+
         double penX = x + VirtualField.HALF_FIELD_WIDTH;
         double penY = VirtualField.HALF_FIELD_WIDTH - y;
 
-        ObservableList<Double> points = penTrail.getPoints();
+        ObservableList<Double> points = currentStroke.getPoints();
         int n = points.size();
         if (n >= 2) {
             double dx = penX - points.get(n - 2);
@@ -314,7 +375,18 @@ public class DrawBot extends VirtualBot {
         }
 
         points.addAll(penX, penY);
-        if (points.size() > 2 * MAX_TRAIL_POINTS) points.remove(0, 2);
+        trailPointCount++;
+        if (trailPointCount > MAX_TRAIL_POINTS) removeOldestTrailPoint();
+    }
+
+    /**
+     * Drop the first point of the oldest line, and the line itself once it is empty.
+     */
+    private void removeOldestTrailPoint() {
+        Polyline oldest = (Polyline) penTrail.getChildren().get(0);
+        oldest.getPoints().remove(0, 2);
+        trailPointCount--;
+        if (oldest.getPoints().isEmpty() && oldest != currentStroke) penTrail.getChildren().remove(0);
     }
 
     /**
@@ -322,8 +394,14 @@ public class DrawBot extends VirtualBot {
      */
     private void clearPenTrail() {
         if (penTrail == null) return;
-        if (Platform.isFxApplicationThread()) penTrail.getPoints().clear();
-        else Platform.runLater(() -> penTrail.getPoints().clear());
+        if (Platform.isFxApplicationThread()) clearPenTrailNow();
+        else Platform.runLater(this::clearPenTrailNow);
+    }
+
+    private void clearPenTrailNow() {
+        penTrail.getChildren().clear();
+        currentStroke = null;
+        trailPointCount = 0;
     }
 
     public void powerDownAndReset() {

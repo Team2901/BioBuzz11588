@@ -34,6 +34,7 @@ import org.dyn4j.world.World;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.opmode.TelemetryImpl;
 import org.reflections.Reflections;
+import virtual_robot.util.AngleUtils;
 import virtual_robot.config.Config;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -43,11 +44,14 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotorImpl;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
 import virtual_robot.robots.ControlsElements;
 import virtual_robot.robots.classes.MecanumBot;
@@ -71,7 +75,8 @@ public class VirtualRobotController {
     @FXML ImageView imgViewBackground;
     @FXML private ComboBox<Class<?>> cbxConfig;
     @FXML private Button driverButton;
-    @FXML private ComboBox<Class<?>> cbxOpModes;
+    @FXML private ComboBox<Class<?>> cbxAutoOpModes;
+    @FXML private ComboBox<Class<?>> cbxTeleOpModes;
     @FXML private Slider sldRandomMotorError;
     @FXML private Slider sldSystematicMotorError;
     @FXML private Slider sldMotorInertia;
@@ -82,6 +87,9 @@ public class VirtualRobotController {
     @FXML private CheckBox cbxShowPath;
     @FXML private CheckBox checkBoxAutoHuman;
     @FXML private Label lblRunTime;
+    @FXML private Label lblRobotPose;
+    @FXML private ComboBox<String> cbxMoveRobot;
+    @FXML private Button btnPowerCycle;
     @FXML private HBox hbxGamePadPanels;
 
     // dyn4j world
@@ -196,6 +204,18 @@ public class VirtualRobotController {
         sldRandomMotorError.valueProperty().addListener(sliderChangeListener);
         sldSystematicMotorError.valueProperty().addListener(sliderChangeListener);
         sldMotorInertia.valueProperty().addListener(sliderChangeListener);
+
+        cbxMoveRobot.getItems().addAll(Config.PRESET_POSES.keySet());
+        // A ComboBox stops showing its prompt text once its value is cleared (a long-standing
+        // JavaFX bug), and handleCbxMoveRobot clears it after every pick. Draw the prompt in
+        // the button cell ourselves whenever nothing is selected.
+        cbxMoveRobot.setButtonCell(new ListCell<String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? cbxMoveRobot.getPromptText() : item);
+            }
+        });
 
         try{
             FXMLLoader loader1 = new FXMLLoader(getClass().getResource("virtual_gamepad.fxml"));
@@ -323,6 +343,29 @@ public class VirtualRobotController {
         }
     }
 
+    /**
+     * Configurations dropdown order: alphabetical by the name shown, ignoring case. The class
+     * name breaks ties, so the order is the same on every run.
+     */
+    static final Comparator<Class<?>> CONFIG_ORDER =
+            Comparator.<Class<?>, String>comparing(c -> c.getAnnotation(BotConfig.class).name(),
+                            String.CASE_INSENSITIVE_ORDER)
+                    .thenComparing(Class::getName);
+
+    /**
+     * OpModes dropdown order: by group, then by name, both ignoring case, matching how each
+     * entry is shown ("group: name"). Ungrouped OpModes come first. The class name breaks
+     * ties, so the order is the same on every run.
+     */
+    static final Comparator<Class<?>> OPMODE_ORDER =
+            Comparator.<Class<?>, String>comparing(c -> {
+                        String group = getGroupFromAnnotationOrOpmode(c);
+                        return group == null ? "" : group;
+                    }, String.CASE_INSENSITIVE_ORDER)
+                    .thenComparing(VirtualRobotController::getNameFromAnnotationOrOpmode,
+                            String.CASE_INSENSITIVE_ORDER)
+                    .thenComparing(Class::getName);
+
     private void setupCbxRobotConfigs(){
         //Reflections reflections = new Reflections(VirtualRobotApplication.class.getClassLoader());
         Reflections reflections = new Reflections("virtual_robot.robots.classes");
@@ -333,6 +376,8 @@ public class VirtualRobotController {
             if (!c.getAnnotation(BotConfig.class).disabled() && VirtualBot.class.isAssignableFrom(c))
                 validConfigClasses.add(c);
         }
+        // Reflections hands back a HashSet, whose order changes from run to run.
+        validConfigClasses.sort(CONFIG_ORDER);
         cbxConfig.setItems(validConfigClasses);
 //        cbxConfig.setValue(MecanumBot.class);
         cbxConfig.setValue(Config.DEFAULT_BOT);
@@ -396,7 +441,7 @@ public class VirtualRobotController {
     }
 
 
-    private String getNameFromAnnotationOrOpmode(Class<?> c){
+    private static String getNameFromAnnotationOrOpmode(Class<?> c){
         String name = "";
         Annotation a1 = c.getAnnotation(TeleOp.class);
         if(a1 != null){
@@ -413,7 +458,7 @@ public class VirtualRobotController {
         return name;
     }
 
-    private String getGroupFromAnnotationOrOpmode(Class<?> c){
+    private static String getGroupFromAnnotationOrOpmode(Class<?> c){
         String group = null;
         Annotation a1 = c.getAnnotation(TeleOp.class);
         if(a1 != null){
@@ -433,28 +478,44 @@ public class VirtualRobotController {
         Set<Class<?>> opModes = new HashSet<>();
         opModes.addAll(reflections.getTypesAnnotatedWith(TeleOp.class));
         opModes.addAll(reflections.getTypesAnnotatedWith(Autonomous.class));//Lists of OpMode classes and OpMode Names
-        ObservableList<Class<?>> nonDisabledOpModeClasses = FXCollections.observableArrayList();
+        // As on the Driver Station, autonomous and teleop OpModes go in separate lists.
+        ObservableList<Class<?>> autoOpModes = FXCollections.observableArrayList();
+        ObservableList<Class<?>> teleOpModes = FXCollections.observableArrayList();
         for (Class<?> c : opModes){
             if (c.getAnnotation(Disabled.class) == null && OpMode.class.isAssignableFrom(c)){
-                nonDisabledOpModeClasses.add(c);
+                if (c.getAnnotation(TeleOp.class) != null) teleOpModes.add(c);
+                else autoOpModes.add(c);
             }
         }
 
-        nonDisabledOpModeClasses.sort(new Comparator<Class<?>>() {
-            @Override
-            public int compare(Class<?> o1, Class<?> o2) {
-                String group1 = getGroupFromAnnotationOrOpmode(o1);
-                String group2 = getGroupFromAnnotationOrOpmode(o2);
+        // Reflections hands back a HashSet, whose order changes from run to run.
+        autoOpModes.sort(OPMODE_ORDER);
+        teleOpModes.sort(OPMODE_ORDER);
 
-                if (group1 == null) return -1;
-                else if (group2 == null) return 1;
-                else return group1.compareToIgnoreCase(group2);
-            }
+        setUpOpModeComboBox(cbxAutoOpModes, autoOpModes, "No autonomous");
+        setUpOpModeComboBox(cbxTeleOpModes, teleOpModes, "No teleop");
+
+        // Only one OpMode is ever queued: picking from one list clears the other.
+        cbxAutoOpModes.valueProperty().addListener((obs, old, picked) -> {
+            if (picked != null) cbxTeleOpModes.setValue(null);
+        });
+        cbxTeleOpModes.valueProperty().addListener((obs, old, picked) -> {
+            if (picked != null) cbxAutoOpModes.setValue(null);
         });
 
-        cbxOpModes.setItems(nonDisabledOpModeClasses);
+        // Nothing is queued at startup, as on the Driver Station: pick an OpMode before INIT.
+    }
 
-        cbxOpModes.setCellFactory(new Callback<ListView<Class<?>>, ListCell<Class<?>>>() {
+    /**
+     * Fill one of the OpMode dropdowns. The list shows "group: name"; the closed box shows the
+     * name, or the prompt text when nothing is selected. (A ComboBox stops drawing its prompt
+     * once its value has been cleared, which happens whenever the other list is picked from.)
+     */
+    private void setUpOpModeComboBox(ComboBox<Class<?>> cbx, ObservableList<Class<?>> items, String promptWhenEmpty){
+        cbx.setItems(items);
+        if (items.isEmpty()) cbx.setPromptText(promptWhenEmpty);
+
+        cbx.setCellFactory(new Callback<ListView<Class<?>>, ListCell<Class<?>>>() {
             @Override
             public ListCell<Class<?>> call(ListView<Class<?>> param) {
                 final ListCell<Class<?>> cell = new ListCell<Class<?>>(){
@@ -479,27 +540,13 @@ public class VirtualRobotController {
             }
         });
 
-        cbxOpModes.setButtonCell(new ListCell<Class<?>>(){
+        cbx.setButtonCell(new ListCell<Class<?>>(){
             @Override
             protected void updateItem(Class<?> cl, boolean bln) {
                 super.updateItem(cl, bln);
-                if (cl == null) {
-                    setText(null);
-                    return;
-                }
-                setText(getNameFromAnnotationOrOpmode(cl));
+                setText(bln || cl == null ? cbx.getPromptText() : getNameFromAnnotationOrOpmode(cl));
             }
         });
-
-        /*
-         * A project with no OpModes yet is a normal starting state, not an error - so
-         * open with an empty selection rather than crashing on the first entry.
-         */
-        if (!cbxOpModes.getItems().isEmpty()) {
-            cbxOpModes.setValue(cbxOpModes.getItems().get(0));
-        } else {
-            cbxOpModes.setPromptText("No OpModes found");
-        }
     }
 
 
@@ -514,10 +561,13 @@ public class VirtualRobotController {
         bot = getVirtualBotInstance(cbxConfig.getValue());
         if (bot == null) System.out.println("Unable to get VirtualBot Object");
         hardwareMap = bot.getHardwareMap();
+        // Every configuration starts at the same pose, placed as a drag would place it.
+        moveBotTo(Config.STARTING_POSE);
         initializeTelemetryTextArea();
         sldRandomMotorError.setValue(0.0);
         sldSystematicMotorError.setValue(0.0);
         sldMotorInertia.setValue(0.0);
+        updateRobotPoseLabel();
     }
 
 
@@ -537,6 +587,10 @@ public class VirtualRobotController {
             driverButton.setText("START");
             opModeInitialized = true;
             cbxConfig.setDisable(true);
+            cbxAutoOpModes.setDisable(true);
+            cbxTeleOpModes.setDisable(true);
+            cbxMoveRobot.setDisable(true);
+            btnPowerCycle.setDisable(true);
             Runnable runOpMode = new Runnable() {
                 @Override
                 public void run() {
@@ -553,6 +607,7 @@ public class VirtualRobotController {
                     Config.GAME.updateDisplay();
                     bot.updateDisplay();
                     pathLine.getPoints().addAll(halfFieldWidth + bot.getX(), halfFieldWidth - bot.getY());
+                    updateRobotPoseLabel();
                 }
             };
 
@@ -603,12 +658,17 @@ public class VirtualRobotController {
             gamePadHelper.onOpModeFinished();
             initializeTelemetryTextArea();
             cbxConfig.setDisable(false);
+            cbxAutoOpModes.setDisable(false);
+            cbxTeleOpModes.setDisable(false);
+            cbxMoveRobot.setDisable(false);
+            btnPowerCycle.setDisable(false);
         }
     }
 
     private void runOpModeAndCleanUp(){
         Platform.runLater(()->lblRunTime.setText("0.00"));
 
+        Throwable failure = null;
         try {
 
             //Activate the hardware map, so that calls to "get" on the hardware map itself, and on dcMotor, etc,
@@ -677,16 +737,17 @@ public class VirtualRobotController {
             //For regular opMode, run user-defined stop() method, if any. For Linear opMode, shut down the
             //helper thread that runs runOpMode.
             opMode.stop();
-        } catch(Exception e){
-            System.out.println("Exception thrown by opModeThread.");
-            System.out.println(e.getClass().getName());
-            System.out.println(e.getLocalizedMessage());
-            System.out.println("Stack Trace:");
-            for (StackTraceElement stackTraceElement: e.getStackTrace()){
-                System.out.println("  " + stackTraceElement.toString());
-            }
+        } catch(Throwable e){
+            // Throwable, not Exception, so an Error (e.g. StackOverflowError) is reported too
+            // rather than silently killing this thread. A LinearOpMode's runOpMode() exception
+            // is rethrown from its loop() and arrives here as well.
+            failure = e;
+            System.out.println("Exception thrown by OpMode " + opMode.getClass().getName() + ":");
+            e.printStackTrace(System.out);
             System.out.println();
         }
+        final Throwable opModeFailure = failure;
+        final String opModeName = getNameFromAnnotationOrOpmode(opMode.getClass());
 
         bot.getHardwareMap().setActive(false);
         bot.powerDownAndReset();
@@ -701,6 +762,11 @@ public class VirtualRobotController {
                 //resetGamePad();
                 initializeTelemetryTextArea();
                 cbxConfig.setDisable(false);
+                cbxAutoOpModes.setDisable(false);
+                cbxTeleOpModes.setDisable(false);
+                cbxMoveRobot.setDisable(false);
+                btnPowerCycle.setDisable(false);
+                if (opModeFailure != null) reportOpModeException(opModeName, opModeFailure);
             }
         });
 
@@ -732,14 +798,35 @@ public class VirtualRobotController {
     private void handleFieldMouseClick(MouseEvent arg){
         if (opModeInitialized || opModeStarted) return;
         bot.positionWithMouseClick(arg);
+        updateRobotPoseLabel();
+    }
+
+    /**
+     * Show the bot's true pose (not what any sensor reports) in FTC field coordinates: inches
+     * from the field centre, X to the right and Y up the screen, heading in degrees with 0 facing
+     * +X and counter-clockwise positive. The bot's own heading is 0 facing up the screen, hence
+     * the +90. Must run on the FX thread.
+     */
+    private void updateRobotPoseLabel() {
+        if (bot == null || lblRobotPose == null) return;
+        double xIn = bot.getX() / VirtualField.PIXELS_PER_INCH;
+        double yIn = bot.getY() / VirtualField.PIXELS_PER_INCH;
+        double headingDeg = Math.toDegrees(AngleUtils.normalizeRadians(bot.getHeadingRadians() + Math.PI / 2.0));
+        lblRobotPose.setText(String.format("X %7.2f%nY %7.2f%nH %7.2f", xIn, yIn, headingDeg));
     }
 
 
     private boolean initOpMode() {
-        Class<?> selected = cbxOpModes.getValue();
+        // At most one of the two lists has a selection; see setupCbxOpModes.
+        Class<?> selected = cbxAutoOpModes.getValue() != null ? cbxAutoOpModes.getValue() : cbxTeleOpModes.getValue();
         if (selected == null) {
-            System.out.println("No OpMode selected. Write one in org.firstinspires.ftc.teamcode "
-                    + "and annotate it @TeleOp or @Autonomous.");
+            // Nothing is queued at startup, so say so where it will be seen, not just on the console.
+            String message = cbxAutoOpModes.getItems().isEmpty() && cbxTeleOpModes.getItems().isEmpty()
+                    ? "No OpModes found. Write one in org.firstinspires.ftc.teamcode and annotate it "
+                        + "@TeleOp or @Autonomous."
+                    : "Select an Autonomous or TeleOp OpMode, then press INIT.";
+            System.out.println(message);
+            txtTelemetry.setText(message);
             return false;
         }
         try {
@@ -758,9 +845,48 @@ public class VirtualRobotController {
             System.out.println("Unable to initialize OpMode " + selected.getName() + ".");
             System.out.println(cause.getMessage());
             cause.printStackTrace();
+            reportOpModeException(getNameFromAnnotationOrOpmode(selected), cause);
             return false;
         }
         return true;
+    }
+
+    /**
+     * Tell the user that their OpMode threw, where they will see it even with the simulator full
+     * screen: an error dialog owned by the simulator window, with the full stack trace. The
+     * console still gets the stack trace too. Must run on the FX thread.
+     */
+    private void reportOpModeException(String opModeName, Throwable t){
+        String summary = opModeName + " threw " + t.getClass().getSimpleName()
+                + (t.getMessage() == null ? "" : ": " + t.getMessage());
+
+        // The first frame in team code is usually the line to look at. The simulator runs a copy
+        // of TeamCode (build/shared-opmodes), but its line numbers match the original.
+        StackTraceElement teamFrame = null;
+        for (Throwable c = t; c != null && teamFrame == null; c = c.getCause()) {
+            for (StackTraceElement e : c.getStackTrace()) {
+                if (e.getClassName().startsWith("org.firstinspires.ftc.teamcode")) { teamFrame = e; break; }
+            }
+        }
+        String where = teamFrame == null ? "" : "at " + teamFrame;
+
+        java.io.StringWriter trace = new java.io.StringWriter();
+        t.printStackTrace(new java.io.PrintWriter(trace));
+
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        if (borderPane.getScene() != null) alert.initOwner(borderPane.getScene().getWindow());
+        alert.setTitle("OpMode error");
+        alert.setHeaderText(summary);
+        alert.setContentText(where.isEmpty() ? "The OpMode has been stopped." : "The OpMode has been stopped.\n" + where);
+        TextArea traceArea = new TextArea(trace.toString());
+        traceArea.setEditable(false);
+        traceArea.setStyle("-fx-font-family: monospace;");
+        traceArea.setPrefSize(800, 350);
+        VBox.setVgrow(traceArea, javafx.scene.layout.Priority.ALWAYS);
+        alert.getDialogPane().setExpandableContent(new VBox(traceArea));
+        alert.getDialogPane().setExpanded(true);
+        alert.setResizable(true);
+        alert.show();
     }
 
     @FXML
@@ -887,8 +1013,19 @@ public class VirtualRobotController {
         cbx.getSelectionModel().select(available.contains(current)? current : GamePadSource.VIRTUAL);
     }
 
+    /**
+     * Called every time the OpMode's telemetry updates, which is many times a second. Replacing
+     * a TextArea's text sends its scroll position back to the start, so skip identical text
+     * and otherwise put the scroll position back after replacing it. Long lines wrap (see
+     * virtual_robot.fxml), so normally only the vertical position matters.
+     */
     public void updateTelemetryDisplay(String telemetryText) {
+        if (telemetryText.equals(txtTelemetry.getText())) return;
+        double scrollTop = txtTelemetry.getScrollTop();
+        double scrollLeft = txtTelemetry.getScrollLeft();
         txtTelemetry.setText(telemetryText);
+        txtTelemetry.setScrollTop(scrollTop);
+        txtTelemetry.setScrollLeft(scrollLeft);
     }
 		
     @FXML
@@ -913,6 +1050,66 @@ public class VirtualRobotController {
         if (!opModeInitialized && bot instanceof ControlsElements){
             ((ControlsElements) bot).preloadElements(Config.GAME);
         }
+    }
+
+    /**
+     * Move Robot dropdown: each entry is a pose from Config.PRESET_POSES. The selection is
+     * cleared afterwards so the dropdown acts as a menu and the same entry can be picked again.
+     */
+    @FXML
+    private void handleCbxMoveRobot(ActionEvent event){
+        String choice = cbxMoveRobot.getValue();
+        if (choice == null) return;
+        if (!opModeInitialized && !opModeStarted && bot != null) {
+            moveBotTo(Config.PRESET_POSES.get(choice));
+        }
+        Platform.runLater(() -> cbxMoveRobot.setValue(null));
+    }
+
+    /**
+     * Power Cycle Robot: as if the robot were switched off and on where it stands. Motor
+     * encoders, IMU headings and the odometry all restart from zero; nothing moves. See
+     * VirtualBot.powerCycle.
+     */
+    @FXML
+    private void handleBtnPowerCycle(ActionEvent event){
+        if (opModeInitialized || opModeStarted || bot == null) return;
+        bot.powerCycle();
+    }
+
+    /**
+     * Place the bot at a pose in the Robot Pose readout's frame (see updateRobotPoseLabel).
+     * Rather than set the bot's fields directly, this feeds it the same two mouse events a
+     * person would make: a right-click ahead of the robot to turn it, then a left-click at the
+     * target to move it. That way every bot's positionWithMouseClick override runs, so attached
+     * arms move with the chassis and the odometry and Pinpoint follow, exactly as for a drag.
+     * Turning first means the final boundary check uses the target heading.
+     */
+    private void moveBotTo(Pose2D pose){
+        if (pose == null) return;
+        double targetX = pose.getX(DistanceUnit.INCH) * VirtualField.PIXELS_PER_INCH;
+        double targetY = pose.getY(DistanceUnit.INCH) * VirtualField.PIXELS_PER_INCH;
+        // The bot's raw heading is 0 facing up the screen; the readout's is 0 facing +X.
+        double rawHeading = pose.getHeading(AngleUnit.RADIANS) - Math.PI / 2.0;
+
+        // Right-click a point ahead of the robot's current centre, in field-pane coordinates.
+        double centerX = VirtualField.HALF_FIELD_WIDTH + bot.getX();
+        double centerY = VirtualField.HALF_FIELD_WIDTH - bot.getY();
+        double reach = VirtualField.HALF_FIELD_WIDTH / 2.0;
+        bot.positionWithMouseClick(syntheticClick(MouseButton.SECONDARY,
+                centerX - reach * Math.sin(rawHeading), centerY - reach * Math.cos(rawHeading)));
+
+        // Left-click the target position.
+        bot.positionWithMouseClick(syntheticClick(MouseButton.PRIMARY,
+                VirtualField.HALF_FIELD_WIDTH + targetX, VirtualField.HALF_FIELD_WIDTH - targetY));
+
+        updateRobotPoseLabel();
+    }
+
+    private static MouseEvent syntheticClick(MouseButton button, double paneX, double paneY){
+        boolean primary = button == MouseButton.PRIMARY;
+        return new MouseEvent(MouseEvent.MOUSE_PRESSED, paneX, paneY, paneX, paneY, button, 1,
+                false, false, false, false, primary, false, !primary, true, false, false, null);
     }
 
 

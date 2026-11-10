@@ -18,7 +18,9 @@ There is no separate JDK to install and no setup script.
 
 **Run your OpModes unchanged.** Write them in `org.firstinspires.ftc.teamcode`,
 annotate `@TeleOp` / `@Autonomous`, extend `OpMode` / `LinearOpMode`. They appear in the
-simulator's Op Mode dropdown and on the Driver Station, from one copy of the source.
+simulator and on the Driver Station, from one copy of the source. As on the Driver
+Station, they are split into **Autonomous** and **TeleOp** dropdowns, and INIT runs the
+one selected.
 
 **Drive a robot with real physics.** Motor powers turn into motion through a rigid body
 physics engine (dyn4j), including momentum, wheel slip and collisions with field
@@ -107,12 +109,9 @@ You can also claim a gamepad from the hardware itself, without reaching for the 
 **Start+A** hands that controller to `Gamepad 1` and **Start+B** hands it to `Gamepad 2`,
 the same gesture the Driver Station uses. The dropdown follows along.
 
-While a physical gamepad drives a panel, the panel's controls follow the hardware — the
-stick handles move, the triggers slide, the buttons light up — and the panel is what the
-OpMode reads, so what you see is genuinely the input. That panel ignores the mouse for as
-long as the gamepad is driving it; giving `Gamepad 2` anything but `Hide` puts its panel
-on screen. `gamepad.rumble(...)` vibrates the physical gamepad as well as tinting the
-trigger sliders.
+While a physical gamepad drives a panel, the panel mirrors the hardware and ignores the
+mouse. `gamepad.rumble(...)` vibrates the physical gamepad as well as tinting the trigger
+sliders.
 
 If SDL cannot start — no gamepad support on the machine — the simulator says so on the
 console, offers `Virtual gamepad` only, and runs mouse-only.
@@ -147,12 +146,10 @@ but they are built in completely different ways.
 | Java level | 8 (`build.common.gradle`) | whatever JVM runs Gradle (JBR 21 in Android Studio) |
 | Shared config | `build.common.gradle`, `build.dependencies.gradle` | none - this module stands alone |
 
-The two never share a classpath. `:Controller` deliberately does **not** depend on
-`:FtcRobotController` and never sees the real FTC artifacts, so its `com.qualcomm.*`
-symbols resolve only to the approximation in `src/`. That is what keeps two definitions
-of the same class from colliding: each target compiles the same OpMode source against a
-different definition of the SDK. It is also why the FTC artifacts could not simply be
-reused here - they are Android AARs, which a plain-Java module cannot consume at all.
+The two never share a classpath: `:Controller` does **not** depend on
+`:FtcRobotController` or the real FTC artifacts (Android AARs, which a plain-Java module
+cannot use anyway). Each target compiles the same OpMode source against its own
+definition of the SDK, so the duplicate class names never collide.
 
 ### The shared OpModes are copied, not referenced
 
@@ -182,10 +179,6 @@ extractPedroPathingIvy
 and `ivy` AARs and put them on the classpath; `com.pedropathing:core` is a plain jar and is
 used as-is.
 
-`processResources` matters more than it looks: the FXML layouts, the field `.bmp` images
-and the robot geometry live next to the source under `src/`, and are packaged from
-there.
-
 Building or deploying the robot app is untouched by any of this - `:TeamCode` has no
 dependency on `:Controller`, so `assembleDebug` behaves exactly as it did before the
 simulator existed.
@@ -195,37 +188,51 @@ simulator existed.
 Chosen from the **Configuration** dropdown before pressing INIT. Position the robot by
 left-clicking the field (position) and right-clicking (heading).
 
-Mecanum Bot, MecDynamic Bot, Arm Bot, Freight Bot, QQ Bot and Ulti Bot are mecanum
-drives. They carry `frontLeft` / `frontRight` / `backLeft` / `backRight`, an `imu`, a
-Pinpoint odometry computer, `sensor_otos`, `octoquad`, a `color_sensor` and four
-distance sensors.
+Mecanum Bot is a mecanum drive with `frontLeft` / `frontRight` / `backLeft` /
+`backRight`, an `imu`, a Pinpoint odometry computer, `sensor_otos`, `octoquad`, a
+`color_sensor` and four distance sensors.
 
-**biobuzz_v1** is the team's robot: Mecanum Bot's drive with every drive motor mounted
-the other way round (so team code reverses the opposite side), `imu` and Pinpoint (plus
-`sensor_otos`, `octoquad` and `limelight`), without its back servo, dead-wheel encoders,
-color sensor or distance sensors, and with three game motors — `intake` and `transfer`
-(312 RPM goBILDA motors) and `launcher` (a 6000 RPM 1:1 flywheel motor, 28 ticks/rev).
-On screen the intake roller and transfer belt turn green running forward and red in
-reverse, and the launcher wheel brightens with flywheel speed.
+Biobuzz V1 (the default) is the team robot: the mecanum drive, `imu` and Pinpoint, with
+`intake`, `transfer` and `launcher` motors in place of the colour and distance sensors.
+Biobuzz V2 adds a `turret` motor (312 RPM through 5:1,
+2688 ticks per turret revolution) carrying the launcher. The turret turns one full revolution,
+180° each way from forward, and positive power turns it counter-clockwise.
 
 Claw Bot is a two-wheel drive (`leftDrive` / `rightDrive`) with an `imu`, an `arm` motor,
 a `claw` servo and a Pinpoint odometry computer (`pinpoint`). It has no strafe, so the
 Pinpoint's Y pod only moves when the robot turns or is pushed.
 
-Also available: Two Wheel Bot, XDrive Bot, Kiwi Bot, Swerve Bot, Differential
-Swerve Bot, Square Omni Bot, Turret Bot, and a Programming Board that does not drive but
-carries a motor, servo, potentiometer, touch sensor and colour-distance sensor.
+Draw Bot steers its two drive motors (`greenDriveMotor` / `goldDriveMotor`) on one pod
+turned by `turnMotor`, read by a `pot`, and draws on the field while `penServo` is down.
+The Programming Board does not drive but carries a motor, servo, potentiometer, touch
+sensor and colour-distance sensor.
+
+The upstream robots (Arm Bot, XDrive Bot, Swerve Bot and others) are still in
+`src/virtual_robot/robots/classes` with their `@BotConfig` commented out; uncomment it to
+bring one back.
 
 ## Settings
 
 `src/virtual_robot/config/Config.java` holds the run-time options — field size and image,
 whether the gamepad controls hold their position when released
-(`HOLD_CONTROLS_BY_DEFAULT`), and the game (currently Decode; `new NoGame()` removes the
-field obstacles).
+(`HOLD_CONTROLS_BY_DEFAULT`), and the game (currently `NoGame`, an empty field;
+`new Decode()` adds the Decode goals and ramps).
 
 The sliders beside the field inject random and systematic motor error and motor inertia,
 which is useful for checking that an autonomous routine is not relying on perfectly
 accurate motors.
+
+The **Robot Pose** readout shows the robot's true pose in field coordinates: inches from
+the field centre, X right, Y up, heading 0 facing right. Comparing it with the Pinpoint
+shows how far odometry has drifted.
+
+Robots start at the preset named by `Config.DEFAULT_PRESET_POSE` (currently `"Origin"`,
+the field centre facing right). Dragging the robot, or picking a pose from **Move Robot**
+(`Config.PRESET_POSES`), sets the Pinpoint to the new pose. The presets include the Decode
+alliance starting spots; keep them in step with the starting poses your autonomous uses.
+
+**Power Cycle Robot** acts as if the robot were switched off and on where it stands:
+encoders, IMU heading and the Pinpoint all restart from zero.
 
 ## Layout
 

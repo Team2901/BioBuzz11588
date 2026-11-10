@@ -168,7 +168,15 @@ public class HardwareMap implements Iterable<HardwareDevice>{
     }
 
 
-    private synchronized <T> T tryGet(Class<? extends T> classOrInterface, String deviceName){
+    /**
+     * Obtain a device with a specified name and class or interface from the HardwareMap, or
+     * null if there is no such device. As in the real SDK, this is the non-throwing form of get.
+     * @param classOrInterface
+     * @param deviceName
+     * @param <T>
+     * @return the device, or null
+     */
+    public synchronized <T> T tryGet(Class<? extends T> classOrInterface, String deviceName){
         if (!active){
             System.out.println("ERROR: Cannot obtain references to hardware before INIT button is pressed.");
             return null;

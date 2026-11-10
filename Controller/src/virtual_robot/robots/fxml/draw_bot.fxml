@@ -62,7 +62,7 @@
             </children>
         </Group>
 
-        <!-- The pen. Its track across the field is drawn by the Polyline that DrawBot adds to the field pane. -->
-        <Circle centerX="37.5" centerY="37.5" fill="#111111" radius="3.5" stroke="BLACK" strokeType="INSIDE" />
+        <!-- The pen, on penServo. Its track across the field is drawn by the lines DrawBot adds to the field pane. -->
+        <Circle fx:id="pen" centerX="37.5" centerY="37.5" fill="#111111" radius="3.5" stroke="BLACK" strokeType="INSIDE" />
     </children>
 </Group>

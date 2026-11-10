@@ -26,7 +26,7 @@ public class TestMoveDriveBaseTeleop extends OpMode {
         double rightJoyX = gamepad1.right_stick_x;
         Pose2D currentPose = robot.pinpoint.getPosition();
 
-        double robotAngle  = robot.getAngle() + 90; // TODO - robot angle should match how robot is initially on field
+        double robotAngle  = robot.getAngle();
         if(gamepad1.a){
             robot.moveTowardsRelField(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0), currentPose);
         }else{

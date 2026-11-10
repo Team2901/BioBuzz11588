@@ -191,17 +191,18 @@ public abstract class LinearOpMode extends OpMode {
 
         //If runOpMode has exited, check for exceptions, shut down the executorService, then interrupt the opMode thread (currentThread)
         if (helper.isFinished()) {
-            if (helper.hasException()){
-                System.out.println("Exception from runOpMode:");
-                System.out.println(helper.getException().getClass().getName());
-                System.out.println(helper.getException().getLocalizedMessage());
-                System.out.println("Stack Trace:");
-                for (StackTraceElement stackTraceElement: helper.getException().getStackTrace()){
-                    System.out.println("  " + stackTraceElement.toString());
-                }
-                System.out.println();
-            }
+            Throwable failure = helper.getException();
             stop();
+            /*
+             * Rethrow runOpMode's exception on the OpMode thread, so the simulator reports it
+             * (stack trace dialog) exactly as it does for an iterative OpMode's loop(). The
+             * InterruptedException that stopping the OpMode causes is a normal exit, not an error.
+             */
+            if (failure != null && !(failure instanceof InterruptedException)) {
+                if (failure instanceof RuntimeException) throw (RuntimeException) failure;
+                if (failure instanceof Error) throw (Error) failure;
+                throw new RuntimeException(failure);
+            }
             Thread.currentThread().interrupt();
         }
 
@@ -222,7 +223,7 @@ public abstract class LinearOpMode extends OpMode {
      */
     protected class LinearOpModeHelper implements Runnable {
 
-        protected Exception exception = null;
+        protected Throwable exception = null;
         protected boolean isFinished = false;
 
         public LinearOpModeHelper() {
@@ -235,7 +236,7 @@ public abstract class LinearOpMode extends OpMode {
 
             try {
                 LinearOpMode.this.runOpMode();
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 exception = e;
             } finally {
                 // Do the necessary bookkeeping
@@ -248,7 +249,7 @@ public abstract class LinearOpMode extends OpMode {
             return (exception != null);
         }
 
-        public Exception getException() {
+        public Throwable getException() {
             return exception;
         }
 

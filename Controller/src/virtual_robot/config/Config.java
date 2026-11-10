@@ -7,6 +7,14 @@ import virtual_robot.controller.VirtualBot;
 import virtual_robot.robots.classes.BioBuzzV1;
 import virtual_robot.games.NoGame;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
  * Class for configuring the field (width and image) and the game.
  */
@@ -60,4 +68,44 @@ public class Config {
      *  Default Robot Configuration
      */
     public static final Class<? extends VirtualBot> DEFAULT_BOT = BioBuzzV1.class;
+
+    /**
+     * Which of the PRESET_POSES below every robot configuration starts at when it is loaded.
+     * Must be one of their names exactly, e.g. "Origin" or "Red Audience".
+     */
+    public static final String DEFAULT_PRESET_POSE = "Origin";
+
+    /**
+     * Poses offered by the simulator's Move Robot dropdown, in the order listed. They are in the
+     * same frame as the Robot Pose readout: origin at field centre, X right, Y up the screen,
+     * heading 0 facing +X, counter-clockwise positive. The four starting poses are the Decode
+     * alliance starting spots; the simulator does not read team code, so keep them in step with
+     * any starting poses the team's autonomous uses.
+     */
+    public static final Map<String, Pose2D> PRESET_POSES;
+    static {
+        Map<String, Pose2D> poses = new LinkedHashMap<>();
+        poses.put("Origin", pose(0, 0, 0));
+        poses.put("Red Audience", pose(-12, -72 + 9, 90));
+        poses.put("Red Far", pose(-12, 72 - 9, -90));
+        poses.put("Blue Audience", pose(12, -72 + 9, 90));
+        poses.put("Blue Far", pose(12, 72 - 9, -90));
+        PRESET_POSES = Collections.unmodifiableMap(poses);
+    }
+
+    /**
+     * The pose named by DEFAULT_PRESET_POSE. The robot is placed there exactly as a drag would
+     * place it, so attached arms follow and the odometry reports this pose.
+     */
+    public static final Pose2D STARTING_POSE = PRESET_POSES.get(DEFAULT_PRESET_POSE);
+    static {
+        if (STARTING_POSE == null) {
+            throw new IllegalStateException("Config.DEFAULT_PRESET_POSE is \"" + DEFAULT_PRESET_POSE
+                    + "\", which is not one of the PRESET_POSES: " + PRESET_POSES.keySet());
+        }
+    }
+
+    private static Pose2D pose(double xInches, double yInches, double headingDegrees) {
+        return new Pose2D(DistanceUnit.INCH, xInches, yInches, AngleUnit.DEGREES, headingDegrees);
+    }
 }

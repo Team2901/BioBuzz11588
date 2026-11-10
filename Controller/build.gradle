@@ -73,7 +73,6 @@ def pedroPathingIvyVersion = '1.0.0'         // com.pedropathing:ivy - command s
 
 // ---- OpModes the stub SDK cannot compile: kept out of the SIMULATOR build only ----
 // (they still build and deploy on the physical robot via :TeamCode.)
-// Nothing is currently excluded: every OpMode in TeamCode compiles for the simulator.
 def simIncompatibleOpModes = [
         'org/firstinspires/ftc/teamcode/cameraVisionPipelines/ConceptVisionBenchAprilTag.java'
 ]
@@ -88,6 +87,20 @@ def syncSharedOpModes = tasks.register('syncSharedOpModes', Sync) {
     into sharedOpModesDir
 }
 
+/*
+ * TeamCode's app assets (e.g. AutoPaths.json). On the robot they are packaged into the
+ * APK under "assets/"; here they are copied onto the classpath under the same "assets/"
+ * prefix, which is where the stub android.content.res.AssetManager reads them from - so
+ * AppUtil.getInstance().getActivity().getAssets().open("AutoPaths.json") works in both.
+ */
+def sharedAssetsDir = layout.buildDirectory.dir('shared-assets')
+
+def syncSharedAssets = tasks.register('syncSharedAssets', Sync) {
+    description = 'Copies TeamCode/src/main/assets onto the simulator classpath under assets/.'
+    from(rootProject.file('TeamCode/src/main/assets'))
+    into sharedAssetsDir.map { it.dir('assets') }
+}
+
 sourceSets {
     main {
         java {
@@ -97,6 +110,7 @@ sourceSets {
         // package the FXML / .bmp field images / robot geometry that live next to the source
         resources {
             srcDirs = ['src']
+            srcDir(files(sharedAssetsDir).builtBy(syncSharedAssets))
             exclude '**/*.java'
         }
     }

@@ -167,6 +167,22 @@ public class CommonOdometry {
     }
 
     /**
+     * Simulator only (not an SDK method): put the user coordinate system on the field frame,
+     * so the odometry reports the robot's true field pose. That frame has its origin at the
+     * centre of the field, X to the right and Y up the screen, with heading 0 facing +X and
+     * counter-clockwise positive. It matches the simulator's Robot Pose readout. A base heading
+     * of 0 gives this frame, because a raw heading of 0 (facing up) maps to a user heading of
+     * PI/2. Note that the default base pose above (heading PI/2) is a different frame:
+     * X up the screen and Y to the left.
+     * Called when the robot is dragged into place, so the odometry follows the drag rather
+     * than re-zeroing at the drop point.
+     */
+    public synchronized void resetToFieldFrame() {
+        basePoseMR = new Pose2D(DistanceUnit.METER, 0, 0, AngleUnit.RADIANS, 0);
+        internalUpdate();
+    }
+
+    /**
      * Gets the velocity measured by the CommonOdometry
      * @return Velocity measured by the CommonOdometry
      */
