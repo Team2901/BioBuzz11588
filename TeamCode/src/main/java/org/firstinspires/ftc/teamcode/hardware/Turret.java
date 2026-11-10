@@ -12,7 +12,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 public class Turret {
     Telemetry telemetry;
     Hardware robot;
-    public DcMotorEx turret;
+    public DcMotorEx turretMotor;
     HardwareMap hardwareMap;
     private final static double TURRET_GEAR_RATIO = 2.75/1;
     private final static double TICKS_PER_TURRET_REVOLUTION = Hardware.TICKS_PER_MOTOR_REV*TURRET_GEAR_RATIO;
@@ -21,9 +21,9 @@ public class Turret {
         telemetry = _telemetry;
         robot = _robot;
         try {
-            turret = hardwareMap.get(DcMotorEx.class, "turret");
+            turretMotor = hardwareMap.get(DcMotorEx.class, "turret");
         } catch (IllegalArgumentException e) {
-            turret = new MockDcMotor();
+            turretMotor = new MockDcMotor();
             telemetry.addLine("Can't find turret: making a mock");
         }
     }
@@ -39,11 +39,11 @@ public class Turret {
         return robot.angleDiffDegrees(fieldAngle, robotHeading);
     }
     public double getAngle(){
-        return 360*(turret.getCurrentPosition()%TICKS_PER_TURRET_REVOLUTION)/(TICKS_PER_TURRET_REVOLUTION);
+        return 360*(turretMotor.getCurrentPosition()%TICKS_PER_TURRET_REVOLUTION)/(TICKS_PER_TURRET_REVOLUTION);
         // It is a 312 RPM Motor so it uses the same TICKS_PER_MOTOR_REV as drivebase motors
     }
     public void resetEncoder(){
-        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
     private void setAngle(){
         double newAngle;
@@ -53,16 +53,16 @@ public class Turret {
             newAngle = findNewAngle(-12,-12);
         }
         double ticks = (newAngle/360)*TICKS_PER_TURRET_REVOLUTION;
-        double posDifference = ticks-turret.getCurrentPosition();
+        double posDifference = ticks- turretMotor.getCurrentPosition();
         double difWrapped = posDifference%TICKS_PER_TURRET_REVOLUTION;
         if(difWrapped > TICKS_PER_TURRET_REVOLUTION/2){
             difWrapped -= TICKS_PER_TURRET_REVOLUTION;
         }else if(difWrapped < -TICKS_PER_TURRET_REVOLUTION/2){
             difWrapped += TICKS_PER_TURRET_REVOLUTION;
         }
-        turret.setTargetPosition(turret.getCurrentPosition() + (int) difWrapped);
-        turret.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        turret.setVelocity(robot.getTurnToAngleSpeedTurret(newAngle));
+        turretMotor.setTargetPosition(turretMotor.getCurrentPosition() + (int) difWrapped);
+        turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        turretMotor.setVelocity(robot.getTurnToAngleSpeedTurret(newAngle));
     }
     public void update(){
         double desiredAngle;
@@ -74,6 +74,6 @@ public class Turret {
         setAngle();
         telemetry.addData("Current turret angle", robot.turret.getAngle());
         telemetry.addData("Desired angle", desiredAngle);
-        telemetry.addData("Turret ticks", turret.getCurrentPosition());
+        telemetry.addData("Turret ticks", turretMotor.getCurrentPosition());
     }
 }
