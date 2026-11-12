@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
 public class ExampleTurret {
@@ -94,7 +95,7 @@ public class ExampleTurret {
         // Step 3. Turn the turret toward that position.
         turnTowardsRelRobot(closestTargetHeadingRelRobot);
     }
-    
+
     /**
      * Choose the turret position that faces a heading on the robot, without passing a hard stop.
      * <p>
@@ -131,7 +132,7 @@ public class ExampleTurret {
         // (see minTurretHeading and maxTurretHeading).
         // TODO implement step F-4
         boolean canTurnCounterClockwise = false;
-        boolean canTurnClockwise = false; 
+        boolean canTurnClockwise = false;
 
         // Step 5. Return the candidate to turn to.
         // If both are in range: use the shorter turn.
@@ -191,8 +192,7 @@ public class ExampleTurret {
      * counter-clockwise, in the same frame as the robot's heading.
      */
     public double getHeadingRelField(Pose2D robotPoseRelField) {
-        // TODO implement step B
-        return 0;
+        return AngleUnit.normalizeDegrees(robotPoseRelField.getHeading(AngleUnit.DEGREES) + getHeadingRelRobot());
     }
 
     /**

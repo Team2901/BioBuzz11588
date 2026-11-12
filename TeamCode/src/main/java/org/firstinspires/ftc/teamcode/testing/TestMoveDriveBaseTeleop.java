@@ -44,7 +44,10 @@ public class TestMoveDriveBaseTeleop extends OpMode {
         // if gamepad2 right stick x is pressed, turn the turret continually in that direction (counter clockwise or clockwise)
         // else if gamepad2 left stick is pressed, turn the turret to face that direction (relative to the field)
         // else turn the turret to face the origin of the field (0,0,0)
-        // TODO implement
+
+        double joystick2Angle = Math.toDegrees(Math.atan2(gamepad2.right_stick_y, gamepad2.right_stick_x));
+        telemetry.addData("JoystickAngle", "%.2f", joystick2Angle);
+
         turret.turretMotor.setPower(gamepad2.right_stick_x);
         telemetry.addData("Turret Power", turret.turretMotor.getPower());
         telemetry.addData("Right stick X", gamepad2.right_stick_x);
@@ -54,8 +57,8 @@ public class TestMoveDriveBaseTeleop extends OpMode {
             currentPose.getY(DistanceUnit.INCH),
             currentPose.getHeading(AngleUnit.DEGREES));
 
-        telemetry.addData("current heading relative to robot", turret.getHeadingRelRobot());
-        telemetry.addData("current heading relative to field", turret.getHeadingRelField(currentPose));
+        telemetry.addData("current robot heading", turret.getHeadingRelRobot());
+        telemetry.addData("current field heading", turret.getHeadingRelField(currentPose));
     }
 }
 

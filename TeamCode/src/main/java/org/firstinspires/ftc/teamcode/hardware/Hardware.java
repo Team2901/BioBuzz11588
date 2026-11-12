@@ -215,14 +215,6 @@ public class Hardware {
 
         initImu(hardwareMap);
         initPinpoint(hardwareMap);
-
-        /*
-         * Set the location of the robot - this should be the place you are starting the robot from
-         * This is recommended before you run your autonomous, as a bad initial calibration can cause
-         * an incorrect starting value for x, y, and heading.
-         */
-        // TODO - this should not be part of init, it will reset the position when you run a teleop
-        pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0));
     }
 
     /**
