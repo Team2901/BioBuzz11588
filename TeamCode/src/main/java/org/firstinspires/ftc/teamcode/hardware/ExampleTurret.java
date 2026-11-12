@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.utilities.PoseUtilities;
 
 public class ExampleTurret {
 
@@ -166,11 +167,10 @@ public class ExampleTurret {
         double errorDegrees = clippedTargetHeadingRelRobot - getHeadingRelRobot();
 
         // Step 3. Turn the error into a power, slowing down within 30 degrees.
-        // TODO implement step C-2
-        double counterClockwisePower = 1;
+        double counterClockwisePower = PoseUtilities.getError(errorDegrees, 1.0/30, 1, 0);
 
         // Step 4. Turn the turret.
-        // TODO implement step C-3
+        turretMotor.setPower(counterClockwisePower);
     }
 
     /**
