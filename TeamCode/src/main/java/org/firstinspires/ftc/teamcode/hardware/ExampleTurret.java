@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -159,8 +160,7 @@ public class ExampleTurret {
      */
     public void turnTowardsRelRobot(double targetHeadingRelRobot) {
         // Step 1. Keep the target inside the turret's range.
-        // TODO implement step C-1
-        double clippedTargetHeadingRelRobot = targetHeadingRelRobot;
+        double clippedTargetHeadingRelRobot = Range.clip(targetHeadingRelRobot,minTurretHeading,maxTurretHeading);
 
         // Step 2. Get the error without wrapping, so the turret never turns through its hard stop.
         double errorDegrees = clippedTargetHeadingRelRobot - getHeadingRelRobot();
