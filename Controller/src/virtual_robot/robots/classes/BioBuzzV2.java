@@ -30,7 +30,7 @@ import virtual_robot.controller.BotConfig;
 public class BioBuzzV2 extends BioBuzzV1 {
 
     public static final MotorType TURRET_MOTOR_TYPE = MotorType.Gobilda192;
-    public static final double TURRET_GEAR_RATIO = 5.0;  // motor revolutions per turret revolution
+    public static final double TURRET_GEAR_RATIO = 2.75;  // motor revolutions per turret revolution
     public static final double TURRET_TICKS_PER_REV = TURRET_MOTOR_TYPE.TICKS_PER_ROTATION * TURRET_GEAR_RATIO;
 
     // Pivot of the turret in the 75x75 fxml coordinates; the center of the launcher wheel.
@@ -55,8 +55,8 @@ public class BioBuzzV2 extends BioBuzzV1 {
         hardwareMap.setActive(false);
 
         // Two full revolutions, one each way from facing forward.
-        turretMotor.setActualPositionLimits(-TURRET_TICKS_PER_REV, TURRET_TICKS_PER_REV);
-        turretMotor.setPositionLimitsEnabled(true);
+        //turretMotor.setActualPositionLimits(-TURRET_TICKS_PER_REV, TURRET_TICKS_PER_REV);
+        //turretMotor.setPositionLimitsEnabled(true);
 
         turret.getTransforms().add(turretRotate);
     }
