@@ -57,8 +57,8 @@ public class TestMoveDriveBaseTeleop extends OpMode {
             currentPose.getY(DistanceUnit.INCH),
             currentPose.getHeading(AngleUnit.DEGREES));
 
-        telemetry.addData("current robot heading", turret.getHeadingRelRobot());
-        telemetry.addData("current field heading", turret.getHeadingRelField(currentPose));
+        telemetry.addData("current robot heading", "%.2f", turret.getHeadingRelRobot());
+        telemetry.addData("current field heading", "%.2f", turret.getHeadingRelField(currentPose));
     }
 }
 

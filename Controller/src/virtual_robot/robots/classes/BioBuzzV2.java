@@ -55,8 +55,8 @@ public class BioBuzzV2 extends BioBuzzV1 {
         hardwareMap.setActive(false);
 
         // Two full revolutions, one each way from facing forward.
-        //turretMotor.setActualPositionLimits(-TURRET_TICKS_PER_REV, TURRET_TICKS_PER_REV);
-        //turretMotor.setPositionLimitsEnabled(true);
+        turretMotor.setActualPositionLimits(-TURRET_TICKS_PER_REV, TURRET_TICKS_PER_REV);
+        turretMotor.setPositionLimitsEnabled(false);
 
         turret.getTransforms().add(turretRotate);
     }

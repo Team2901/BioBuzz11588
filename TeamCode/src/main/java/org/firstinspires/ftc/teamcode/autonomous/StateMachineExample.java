@@ -163,7 +163,7 @@ class DoDishesState extends BaseState {
             done = true;
         } else {
             double countdown = 5 - timer.seconds();
-            telemetry.addLine(String.format("Dishes will be done in %.3f seconds.", countdown));
+            telemetry.addLine(String.format("Dishes will be done in %f seconds.", countdown));
 
         }
         return false;

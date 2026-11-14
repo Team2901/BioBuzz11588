@@ -15,7 +15,7 @@ public class ExampleTurret {
 
     public Telemetry telemetry;
 
-    private final static double turretGearRatio = 5.0;
+    private final static double turretGearRatio = 2.75;
 
     /// Encoder ticks per turret rotation: the motor turns 5 times for each turret rotation.
     public static final double TICKS_PER_MOTOR_REV = 537.7;
