@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 
 @TeleOp(name = "OutreachClawbot (potentiometer)", group = "OutreachBot")
-public class OutreachClawbot2 extends OpMode {
+public class OutreachClawbotPotentiometer extends OpMode {
 
     OutreachBotHardware robot = new OutreachBotHardware();
 

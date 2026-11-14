@@ -153,7 +153,7 @@ public class RI5WTeleop extends OpMode {
         //TRANSFER
         //basically says "if at 1 and button is pressed, go to 2.
         // If not at 1 and button is pressed, go to 1"
-        if (gamepad1.xWasPressed()) {
+        if (gamepad1.xWasPressed()) { // equal to the square buttons on new controller
             if (transferState == 1) {
                 transferState = 2;
                 moveTransfer(TRANSFER_POS_2);

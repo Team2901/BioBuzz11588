@@ -5,7 +5,11 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-
+/// Software requirements for clawbot:
+/// knowing where arm is using potentiometer
+/// move arm smoothly (raise and lower)
+/// move claw (open and closed)
+/// move drivebase - nick's code (forward, backward, right, left) (raise claw a little so doesn't drag)
 @SuppressWarnings("unused")
 public class OutreachBotHardware {
     public DcMotor leftDrive = null;
@@ -20,7 +24,7 @@ public class OutreachBotHardware {
 
     //outreach:
     public static final double TURN_WEIGHT = 1;
-    public static final double STRAIGHT_POWER_WEIGHT = 2.0;
+    public static final double STRAIGHT_POWER_WEIGHT = 1.0;
     public static final double CLAW_OPEN_POSITION = 0;
     public static final double CLAW_CLOSED_POSITION = 0.5;
     public static final double ARM_UP_POSITION = 3.0;
