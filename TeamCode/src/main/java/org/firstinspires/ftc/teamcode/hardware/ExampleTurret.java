@@ -90,12 +90,8 @@ public class ExampleTurret {
         // TODO implement step D
         double targetHeadingRelRobot = 0;
 
-        // Step 2. Pick the turret position that faces it: the shorter of turning counter-clockwise
-        // or clockwise that stays inside the hard stops.
-        double closestTargetHeadingRelRobot = chooseReachableHeading(targetHeadingRelRobot);
-
-        // Step 3. Turn the turret toward that position.
-        turnTowardsRelRobot(closestTargetHeadingRelRobot);
+        // Step 2. Turn the turret toward that position.
+        turnTowardsRelRobot(targetHeadingRelRobot);
     }
 
     /**
@@ -114,7 +110,7 @@ public class ExampleTurret {
     public double chooseReachableHeading(double targetHeadingRelRobot) {
         // Step 1. Calculate the shortest turn from the turret's current heading to the target (-180 to 180).
         // TODO implement step F-1
-        double currentHeadingRelRobot = getHeadingRelRobot();
+        double currentHeadingRelRobot = getHeadingRelRobotAbs();
         double targetHeadingRelTurret = 0;
 
         // Step 2. From that, calculate the turn in each direction: counter-clockwise is positive,
@@ -156,15 +152,37 @@ public class ExampleTurret {
      *
      * @param targetHeadingRelRobot the turret angle to turn to, relative to the robot, in degrees:
      *                              0 faces the robot's front and positive is counter-clockwise.
-     *                              Not wrapped: 270 and -90 are different turret positions.
-     *                              Clamped to minTurretHeading to maxTurretHeading.
+     *                              Normalized to -180 to 180
      */
     public void turnTowardsRelRobot(double targetHeadingRelRobot) {
+        // Step 1. Pick the turret position that faces it: the shorter of turning counter-clockwise
+        // or clockwise that stays inside the hard stops.
+        double targetHeadingRelRobotAbs = chooseReachableHeading(targetHeadingRelRobot);
+
+        turnTowardsRelRobotAbs(targetHeadingRelRobotAbs);
+    }
+
+    /**
+     * Set the turret power for one step of turning the turret to an angle on the robot.
+     * <p>
+     * This does not wait; call it every loop. The power follows the PoseUtilities.getError
+     * profile: full power far from the target, ramping down linearly once within 30 degrees.
+     * <p>
+     * The turret can only turn between {@link #minTurretHeading} and {@link #maxTurretHeading},
+     * so the error is taken without wrapping around: the turret always turns the way that stays
+     * inside its range rather than into its hard stop.
+     *
+     * @param targetHeadingRelRobotAbs the turret angle to turn to, relative to the robot, in degrees:
+     *                                 0 faces the robot's front and positive is counter-clockwise.
+     *                                 Not wrapped: 270 and -90 are different turret positions.
+     *                                 Clamped to minTurretHeading to maxTurretHeading.
+     */
+    public void turnTowardsRelRobotAbs(double targetHeadingRelRobotAbs) {
         // Step 1. Keep the target inside the turret's range.
-        double clippedTargetHeadingRelRobot = Range.clip(targetHeadingRelRobot,minTurretHeading,maxTurretHeading);
+        double clippedTargetHeadingRelRobot = Range.clip(targetHeadingRelRobotAbs, minTurretHeading, maxTurretHeading);
 
         // Step 2. Get the error without wrapping, so the turret never turns through its hard stop.
-        double errorDegrees = clippedTargetHeadingRelRobot - getHeadingRelRobot();
+        double errorDegrees = clippedTargetHeadingRelRobot - getHeadingRelRobotAbs();
 
         // Step 3. Turn the error into a power, slowing down within 30 degrees.
         double counterClockwisePower = PoseUtilities.getError(errorDegrees, 1.0/30, 1, 0);
@@ -174,12 +192,22 @@ public class ExampleTurret {
     }
 
     /**
-     * Read the turret's angle from the motor encoder.
+     * Read the turret's angle from the motor encoder. Normalized to -180 to 180
      *
      * @return the turret angle relative to the robot, in degrees: 0 faces the robot's front and
      * positive is counter-clockwise.
      */
     public double getHeadingRelRobot() {
+        return AngleUnit.normalizeDegrees(getHeadingRelRobotAbs());
+    }
+
+    /**
+     * Read the turret's angle from the motor encoder. Not wrapped: 270 and -90 are different turret positions.
+     *
+     * @return the turret angle relative to the robot, in degrees: 0 faces the robot's front and
+     * positive is counter-clockwise.
+     */
+    private double getHeadingRelRobotAbs() {
         return (360*turretMotor.getCurrentPosition())/turretTicksPerRotation;
     }
 
@@ -192,7 +220,7 @@ public class ExampleTurret {
      * counter-clockwise, in the same frame as the robot's heading.
      */
     public double getHeadingRelField(Pose2D robotPoseRelField) {
-        return AngleUnit.normalizeDegrees(robotPoseRelField.getHeading(AngleUnit.DEGREES) + getHeadingRelRobot());
+        return AngleUnit.normalizeDegrees(robotPoseRelField.getHeading(AngleUnit.DEGREES) + getHeadingRelRobotAbs());
     }
 
     /**
