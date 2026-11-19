@@ -304,6 +304,7 @@ public class ExampleTurret {
         // Step 2. Get the field heading from the turret's pivot to the target point.
         // pose2DDelta gives the X and Y from the turret to the target; atan2 turns them into a heading.
         // TODO implement step E
+        //x = turret - goal
         double targetHeadingRelField = 0;
 
         // Step 3. Turn the turret to face that heading.
