@@ -136,15 +136,36 @@ public class ExampleTurret {
         // Step 4. Check whether each candidate is inside the turret's range
         // (see minTurretHeading and maxTurretHeading).
         // TODO implement step F-4
-        boolean canTurnCounterClockwise = false;
-        boolean canTurnClockwise = false;
+        boolean canTurnCounterClockwise = ccwTargetHeadingRelRobot <= maxTurretHeading
+                && ccwTargetHeadingRelRobot >= minTurretHeading;
+        boolean canTurnClockwise = cwTargetHeadingRelRobot <= maxTurretHeading
+                && cwTargetHeadingRelRobot >= minTurretHeading;
 
         // Step 5. Return the candidate to turn to.
         // If both are in range: use the shorter turn.
         // If only one is in range: use it.
         // If neither is (the range is under one rotation): use the stop that faces nearest the heading.
         // TODO implement step F-5
-        return targetHeadingRelRobot;
+        if (canTurnClockwise && canTurnCounterClockwise)
+        {
+            if (Math.abs(ccwTargetHeadingRelTurret)<Math.abs(cwTargetHeadingRelTurret)){
+                return ccwTargetHeadingRelRobot;
+            }else{
+                return cwTargetHeadingRelRobot;
+            }
+        } else if (canTurnClockwise) {
+            return cwTargetHeadingRelRobot;
+        } else if (canTurnCounterClockwise) {
+            return ccwTargetHeadingRelRobot;
+        }else {
+            double minError = Math.abs(AngleUnit.normalizeDegrees(targetHeadingRelRobot - minTurretHeading));
+            double maxError = Math.abs(AngleUnit.normalizeDegrees(targetHeadingRelRobot - maxTurretHeading));
+            if (minError < maxError){
+                return minTurretHeading;
+            }else{
+                return maxTurretHeading;
+            }
+        }
     }
 
     /**
