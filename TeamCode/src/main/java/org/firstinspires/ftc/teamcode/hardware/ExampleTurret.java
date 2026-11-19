@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.utilities.PoseUtilities;
 
@@ -252,6 +253,8 @@ public class ExampleTurret {
     }
 
     /**
+     *
+     *
      * Convert the robot's pose into the turret's pose: the same heading, moved from the robot's
      * center to the turret's pivot (see {@link #turretOffsetXInches} and {@link #turretOffsetYInches}).
      *
@@ -261,23 +264,26 @@ public class ExampleTurret {
     public Pose2D robotPoseToTurretPose(Pose2D robotPoseRelField) {
         // Step 1. Get the robot's heading on the field.
         // TODO implement step G-1
-        double heading = 0;
+        double heading = robotPoseRelField.getHeading(AngleUnit.RADIANS);
 
         // Step 2. Rotate the offset from robot coordinates into field coordinates.
         // The offset is measured on the robot (X forward, Y left), so which way it points on the
         // field depends on which way the robot is facing.
         // TODO implement step G-2
-        double offsetXRelField = 0;
-        double offsetYRelField = 0;
+        double offsetXRelField = Math.sin(heading) * ExampleTurret.turretOffsetXInches -
+                (Math.cos(heading) * ExampleTurret.turretOffsetYInches);
+        double offsetYRelField = Math.sin(heading) * ExampleTurret.turretOffsetXInches +
+                (Math.cos(heading) * ExampleTurret.turretOffsetYInches);
 
         // Step 3. Add the field offset to the robot's position to get the turret's position.
         // TODO implement step G-3
-        double turretXRelField = 0;
-        double turretYRelField = 0;
+        double turretXRelField = offsetXRelField + robotPoseRelField.getX(DistanceUnit.INCH);
+        double turretYRelField = offsetYRelField + robotPoseRelField.getY(DistanceUnit.INCH);
 
         // Step 4. Build the turret's pose, keeping the robot's heading.
-        // TODO implement step G-4
-        return robotPoseRelField;
+
+        return new Pose2D(DistanceUnit.INCH, turretXRelField,
+                turretYRelField, AngleUnit.DEGREES, heading);
     }
 
     /**
