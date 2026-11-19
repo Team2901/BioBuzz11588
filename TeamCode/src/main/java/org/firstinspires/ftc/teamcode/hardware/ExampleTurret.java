@@ -111,7 +111,7 @@ public class ExampleTurret {
         // Step 1. Calculate the shortest turn from the turret's current heading to the target (-180 to 180).
         // TODO implement step F-1
         double currentHeadingRelRobot = getHeadingRelRobotAbs();
-        double targetHeadingRelTurret = 0;
+        double targetHeadingRelTurret = AngleUnit.normalizeDegrees(targetHeadingRelRobot - currentHeadingRelRobot);
 
         // Step 2. From that, calculate the turn in each direction: counter-clockwise is positive,
         // clockwise is negative, and together they make one full rotation.
@@ -120,11 +120,18 @@ public class ExampleTurret {
         // TODO implement step F-2
         double ccwTargetHeadingRelTurret;
         double cwTargetHeadingRelTurret;
+        if(targetHeadingRelTurret > 0){
+            ccwTargetHeadingRelTurret = targetHeadingRelTurret;
+            cwTargetHeadingRelTurret = targetHeadingRelTurret - 360;
+        }else{
+            cwTargetHeadingRelTurret = targetHeadingRelTurret;
+            ccwTargetHeadingRelTurret = targetHeadingRelTurret + 360;
+        }
 
         // Step 3. Add each turn to the current heading to get the two candidate turret positions.
         // TODO implement step F-3
-        double ccwTargetHeadingRelRobot = 0;
-        double cwTargetHeadingRelRobot = 0;
+        double ccwTargetHeadingRelRobot = currentHeadingRelRobot + ccwTargetHeadingRelTurret;
+        double cwTargetHeadingRelRobot = currentHeadingRelRobot + cwTargetHeadingRelTurret;
 
         // Step 4. Check whether each candidate is inside the turret's range
         // (see minTurretHeading and maxTurretHeading).
