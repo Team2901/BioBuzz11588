@@ -131,15 +131,15 @@ public class ExampleTurret {
 
         // Step 3. Add each turn to the current heading to get the two candidate turret positions.
         // TODO implement step F-3
-        double ccwTargetHeadingRelRobot = currentHeadingRelRobot + ccwTargetHeadingRelTurret;
-        double cwTargetHeadingRelRobot = currentHeadingRelRobot + cwTargetHeadingRelTurret;
+        double ccwTargetHeadingRelRobot = currentHeadingRelRobot+ccwTargetHeadingRelTurret;
+        double cwTargetHeadingRelRobot = currentHeadingRelRobot+cwTargetHeadingRelTurret;
 
         // Step 4. Check whether each candidate is inside the turret's range
         // (see minTurretHeading and maxTurretHeading).
         // TODO implement step F-4
-        boolean canTurnCounterClockwise = ccwTargetHeadingRelRobot <= maxTurretHeading
-                && ccwTargetHeadingRelRobot >= minTurretHeading;
-        boolean canTurnClockwise = cwTargetHeadingRelRobot <= maxTurretHeading
+        boolean canTurnCounterClockwise = ccwTargetHeadingRelRobot<=maxTurretHeading
+                && ccwTargetHeadingRelRobot>=minTurretHeading;
+        boolean canTurnClockwise = cwTargetHeadingRelRobot<=maxTurretHeading
                 && cwTargetHeadingRelRobot >= minTurretHeading;
 
         // Step 5. Return the candidate to turn to.

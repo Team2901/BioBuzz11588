@@ -94,7 +94,7 @@ public class RI5WTeleop extends OpMode {
 
        if (gamepad1.dpadUpWasPressed()) {
             robot.imu.resetYaw();
-        }
+       }
 
        if (gamepad1.dpadLeftWasPressed()) {
            robot.launchServo.setPosition(Hardware.POLLEN_POSITION);
