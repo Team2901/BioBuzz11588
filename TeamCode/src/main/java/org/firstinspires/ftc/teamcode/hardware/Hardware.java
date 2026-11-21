@@ -683,4 +683,9 @@ public class Hardware {
         backLeft.setPower(0);
         backRight.setPower(0);
     }
+    public void moveTransfer(int target){
+        transfer.setTargetPosition(target);
+        transfer.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        transfer.setPower(1);
+    }
 }
