@@ -156,10 +156,10 @@ public class RI5WTeleop extends OpMode {
         if (gamepad1.xWasPressed()) { // equal to the square buttons on new controller
             if (transferState == 1) {
                 transferState = 2;
-                moveTransfer(TRANSFER_POS_2);
+                robot.moveTransfer(TRANSFER_POS_2);
             } else {
                 transferState = 1;
-                moveTransfer(TRANSFER_POS_1);
+                robot.moveTransfer(TRANSFER_POS_1);
             }
         }
         if(servoForPollen){
@@ -175,10 +175,10 @@ public class RI5WTeleop extends OpMode {
         if (gamepad1.rightBumperWasPressed()) {
             if (transferState == 2) {
                 transferState = 3;
-                moveTransfer(TRANSFER_POS_3);
+                robot.moveTransfer(TRANSFER_POS_3);
             } else if (transferState == 3) {
                 transferState = 2;
-                moveTransfer(TRANSFER_POS_2);
+                robot.moveTransfer(TRANSFER_POS_2);
             }
         }
 
@@ -225,16 +225,6 @@ public class RI5WTeleop extends OpMode {
         help();
         telemetry.update();
     }
-
-    //every transfer state calls the same code to set target position,
-    //then the mode, then the power
-    public void moveTransfer(int target){
-        robot.transfer.setTargetPosition(target);
-        robot.transfer.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.transfer.setPower(1);
-    }
-
-
     //only works when facing head on
     /*public double getDistanceFromTag(double ta){
         double scale = 29759.3774;
