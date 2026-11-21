@@ -298,11 +298,8 @@ public class ExampleTurret {
         double x = targetPoseRelField.getX(DistanceUnit.INCH) - turretPoseRelField.getX(DistanceUnit.INCH);
         double y = targetPoseRelField.getY(DistanceUnit.INCH) - turretPoseRelField.getY(DistanceUnit.INCH);
 
+        // atan2 returns radians, we use degrees in whole program, need to convert to degrees
         double targetHeadingRelField = Math.toDegrees(Math.atan2(y, x));
-        telemetry.addData("x", x);
-        telemetry.addData("y", y);
-        telemetry.addData("targetHeadingRelField", targetHeadingRelField);
-        telemetry.addData("turretPoseRelField", turretPoseRelField);
         // Step 3. Turn the turret to face that heading.
         turnTowardsRelField(targetHeadingRelField, robotPoseRelField);
     }
