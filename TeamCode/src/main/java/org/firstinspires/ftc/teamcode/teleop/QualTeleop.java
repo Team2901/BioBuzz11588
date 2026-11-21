@@ -21,9 +21,9 @@ public class QualTeleop extends OpMode {
     boolean launcherOn = false;
     boolean intakeOn = false;
     boolean servoForPollen = true;
-    public int TRANSFER_POS_1 = 0;
-    public int TRANSFER_POS_2 = 250;
-    public int TRANSFER_POS_3 = 1500;
+    public int START_1 = 0;
+    public int CLOSE_2 = 150;
+    public int SHOOT_3 = 1050;
     public int TRANSFER_TOLERANCE = 10;
     public int transferState = 1;
     public int launcherVelocityIncrement = 25;
@@ -152,10 +152,10 @@ public class QualTeleop extends OpMode {
         if (gamepad1.xWasPressed()) { // equal to the square buttons on new controller
             if (transferState == 1) {
                 transferState = 2;
-                robot.moveTransfer(TRANSFER_POS_2);
+                robot.moveTransfer(CLOSE_2);
             } else {
                 transferState = 1;
-                robot.moveTransfer(TRANSFER_POS_1);
+                robot.moveTransfer(START_1);
             }
         }
         if(servoForPollen){
@@ -171,10 +171,10 @@ public class QualTeleop extends OpMode {
         if (gamepad1.rightBumperWasPressed()) {
             if (transferState == 2) {
                 transferState = 3;
-                robot.moveTransfer(TRANSFER_POS_3);
+                robot.moveTransfer(SHOOT_3);
             } else if (transferState == 3) {
                 transferState = 2;
-                robot.moveTransfer(TRANSFER_POS_2);
+                robot.moveTransfer(CLOSE_2);
             }
         }
 
