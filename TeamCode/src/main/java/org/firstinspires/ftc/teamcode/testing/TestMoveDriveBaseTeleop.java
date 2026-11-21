@@ -48,7 +48,8 @@ public class TestMoveDriveBaseTeleop extends OpMode {
         double joystick2Angle = Math.toDegrees(Math.atan2(gamepad2.right_stick_y, gamepad2.right_stick_x));
         telemetry.addData("JoystickAngle", "%.2f", joystick2Angle);
         //turret.turretMotor.setPower(gamepad2.right_stick_x);
-        turret.turnTowardsRelRobot(joystick2Angle);
+        //turret.turnTowardsRelRobot(joystick2Angle);
+        turret.aimTurretAtRelField(new Pose2D(DistanceUnit.INCH,0,0, AngleUnit.DEGREES, 0), currentPose);
         telemetry.addData("Turret Power", turret.turretMotor.getPower());
         telemetry.addData("Right stick X", gamepad2.right_stick_x);
 

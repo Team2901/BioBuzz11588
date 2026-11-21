@@ -17,7 +17,6 @@ public class ExampleTurret {
     public Telemetry telemetry;
 
     private final static double turretGearRatio = 2.75;
-
     /// Encoder ticks per turret rotation: the motor turns 5 times for each turret rotation.
     public static final double TICKS_PER_MOTOR_REV = 537.7;
     public static final double turretTicksPerRotation = TICKS_PER_MOTOR_REV * turretGearRatio;
@@ -88,8 +87,7 @@ public class ExampleTurret {
      */
     public void turnTowardsRelField(double targetHeadingRelField, Pose2D robotPoseRelField) {
         // Step 1. Convert the field heading into a heading relative to the robot, -180 to 180.
-        // TODO implement step D
-        double targetHeadingRelRobot = 0;
+        double targetHeadingRelRobot = AngleUnit.normalizeDegrees(targetHeadingRelField - robotPoseRelField.getHeading(AngleUnit.DEGREES));
 
         // Step 2. Turn the turret toward that position.
         turnTowardsRelRobot(targetHeadingRelRobot);
@@ -110,7 +108,6 @@ public class ExampleTurret {
      */
     public double chooseReachableHeading(double targetHeadingRelRobot) {
         // Step 1. Calculate the shortest turn from the turret's current heading to the target (-180 to 180).
-        // TODO implement step F-1
         double currentHeadingRelRobot = getHeadingRelRobotAbs();
         double targetHeadingRelTurret = AngleUnit.normalizeDegrees(targetHeadingRelRobot - currentHeadingRelRobot);
 
@@ -118,7 +115,6 @@ public class ExampleTurret {
         // clockwise is negative, and together they make one full rotation.
         // e.g. if targetHeadingRelTurret is 30, the counter-clockwise turn is 30 and the clockwise
         // turn is 30 - 360 = -330.
-        // TODO implement step F-2
         double ccwTargetHeadingRelTurret;
         double cwTargetHeadingRelTurret;
         if(targetHeadingRelTurret > 0){
@@ -130,13 +126,11 @@ public class ExampleTurret {
         }
 
         // Step 3. Add each turn to the current heading to get the two candidate turret positions.
-        // TODO implement step F-3
         double ccwTargetHeadingRelRobot = currentHeadingRelRobot + ccwTargetHeadingRelTurret;
         double cwTargetHeadingRelRobot = currentHeadingRelRobot + cwTargetHeadingRelTurret;
 
         // Step 4. Check whether each candidate is inside the turret's range
         // (see minTurretHeading and maxTurretHeading).
-        // TODO implement step F-4
         boolean canTurnCounterClockwise = ccwTargetHeadingRelRobot <= maxTurretHeading
                 && ccwTargetHeadingRelRobot >= minTurretHeading;
         boolean canTurnClockwise = cwTargetHeadingRelRobot <= maxTurretHeading
@@ -146,7 +140,6 @@ public class ExampleTurret {
         // If both are in range: use the shorter turn.
         // If only one is in range: use it.
         // If neither is (the range is under one rotation): use the stop that faces nearest the heading.
-        // TODO implement step F-5
         if (canTurnClockwise && canTurnCounterClockwise)
         {
             if (Math.abs(ccwTargetHeadingRelTurret)<Math.abs(cwTargetHeadingRelTurret)){
@@ -263,25 +256,21 @@ public class ExampleTurret {
      */
     public Pose2D robotPoseToTurretPose(Pose2D robotPoseRelField) {
         // Step 1. Get the robot's heading on the field.
-        // TODO implement step G-1
         double heading = robotPoseRelField.getHeading(AngleUnit.RADIANS);
 
         // Step 2. Rotate the offset from robot coordinates into field coordinates.
         // The offset is measured on the robot (X forward, Y left), so which way it points on the
         // field depends on which way the robot is facing.
-        // TODO implement step G-2
         double offsetXRelField = Math.sin(heading) * ExampleTurret.turretOffsetXInches -
                 (Math.cos(heading) * ExampleTurret.turretOffsetYInches);
         double offsetYRelField = Math.sin(heading) * ExampleTurret.turretOffsetXInches +
                 (Math.cos(heading) * ExampleTurret.turretOffsetYInches);
 
         // Step 3. Add the field offset to the robot's position to get the turret's position.
-        // TODO implement step G-3
         double turretXRelField = offsetXRelField + robotPoseRelField.getX(DistanceUnit.INCH);
         double turretYRelField = offsetYRelField + robotPoseRelField.getY(DistanceUnit.INCH);
 
         // Step 4. Build the turret's pose, keeping the robot's heading.
-
         return new Pose2D(DistanceUnit.INCH, turretXRelField,
                 turretYRelField, AngleUnit.DEGREES, heading);
     }
@@ -303,10 +292,17 @@ public class ExampleTurret {
 
         // Step 2. Get the field heading from the turret's pivot to the target point.
         // pose2DDelta gives the X and Y from the turret to the target; atan2 turns them into a heading.
-        // TODO implement step E
-        //x = turret - goal
-        double targetHeadingRelField = 0;
+        // x = goal - turret :)
+        // y = goal - turret :)
+        // TRIG!
+        double x = targetPoseRelField.getX(DistanceUnit.INCH) - turretPoseRelField.getX(DistanceUnit.INCH);
+        double y = targetPoseRelField.getY(DistanceUnit.INCH) - turretPoseRelField.getY(DistanceUnit.INCH);
 
+        double targetHeadingRelField = Math.toDegrees(Math.atan2(y, x));
+        telemetry.addData("x", x);
+        telemetry.addData("y", y);
+        telemetry.addData("targetHeadingRelField", targetHeadingRelField);
+        telemetry.addData("turretPoseRelField", turretPoseRelField);
         // Step 3. Turn the turret to face that heading.
         turnTowardsRelField(targetHeadingRelField, robotPoseRelField);
     }
