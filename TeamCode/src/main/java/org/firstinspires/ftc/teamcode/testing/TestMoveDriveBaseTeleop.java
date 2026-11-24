@@ -40,7 +40,9 @@ public class TestMoveDriveBaseTeleop extends OpMode {
             double leftY = Math.sin(Math.toRadians(leftJoyAngleDegrees)) * leftJoyRadius;
             robot.movePowerRelField(forwardX, leftY, -rightJoyX, currentPose.getHeading(AngleUnit.DEGREES));
         }
-
+        if (gamepad1.y) {
+            robot.pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES, 0));
+        }
         // if gamepad2 right stick x is pressed, turn the turret continually in that direction (counter clockwise or clockwise)
         // else if gamepad2 left stick is pressed, turn the turret to face that direction (relative to the field)
         // else turn the turret to face the origin of the field (0,0,0)
@@ -51,7 +53,6 @@ public class TestMoveDriveBaseTeleop extends OpMode {
         //turret.turnTowardsRelRobot(joystick2Angle);
         turret.aimTurretAtRelField(new Pose2D(DistanceUnit.INCH,0,0, AngleUnit.DEGREES, 0), currentPose);
         telemetry.addData("Turret Power", turret.turretMotor.getPower());
-        telemetry.addData("Right stick X", gamepad2.right_stick_x);
 
         telemetry.addData("current pose", "(%.2f, %.2f, %.2f)",
             currentPose.getX(DistanceUnit.INCH),

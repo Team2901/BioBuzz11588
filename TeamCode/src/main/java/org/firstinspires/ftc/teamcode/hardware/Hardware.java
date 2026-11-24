@@ -26,7 +26,7 @@ public class Hardware {
     public DcMotorEx backLeft; // EH - 1
     public DcMotorEx frontRight; // CH - 0
     public DcMotorEx backRight; // CH - 1
-    public Turret turret;
+    public ExampleTurret turret;
     public DcMotorEx launcher; // CH - 2
     public DcMotorEx intake; // EH - 2
     public DcMotorEx transfer; // EH - 3
@@ -85,7 +85,7 @@ public class Hardware {
 
     public void init(HardwareMap hardwareMap, Telemetry _telemetry) {
         telemetry = _telemetry;
-        //turret = new Turret(hardwareMap, _telemetry, this);
+        turret = new ExampleTurret(hardwareMap, _telemetry);
         //initializes necessary motors
         try {
             limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
@@ -212,7 +212,8 @@ public class Hardware {
             // Use the new RevHubOrientationOnRobot classes to describe how the control hub is mounted on the robot.
             // For the coach bot its mounted Backward / usb cable on the right (as seen from back of robot)
             // Doc: https://github.com/FIRST-Tech-Challenge/FtcRobotController/wiki/Universal-IMU-Interface
-            logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.FORWARD;
+            // logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.FORWARD;
+            logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.BACKWARD;
             usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.RIGHT;
         }
 
@@ -290,7 +291,8 @@ public class Hardware {
     }
 
     public void update() {
-        turret.update();
+        Pose2D currentPose = pinpoint.getPosition();
+        turret.update(currentPose);
         pinpoint.update();
     }
     /**
@@ -585,6 +587,7 @@ public class Hardware {
         return turnPower;
     }
     public Double getTurnToAngleSpeedTurret(Double turnAngle, boolean usePower) {
+        /*
         if (turnAngle == null) {
             return null;
         }
@@ -594,7 +597,7 @@ public class Hardware {
         double targetAngle = turnAngle;
         double startAngle = turret.getAngle();
         double turnError = AngleUnit.normalizeDegrees(targetAngle - startAngle);
-        // If within TOLERANCE (1 degree) stop movement
+         If within TOLERANCE (1 degree) stop movement
         if (Math.abs(turnError) <= TOLERANCE) {
             return 0.0;
         }
@@ -618,6 +621,10 @@ public class Hardware {
         }
         telemetry.addData("Turret Turn Error:", turnError);
         return turnPower;
+
+         */
+        return 0.0;
+        // TODO:we need to figure this out
     }
 
     public YawPitchRollAngles getOrientation() {
