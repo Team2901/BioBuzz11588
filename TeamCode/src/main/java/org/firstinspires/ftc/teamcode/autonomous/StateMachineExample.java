@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.autonomous.StateMachine.MyState;
+import org.firstinspires.ftc.teamcode.autonomous.StateMachine.State;
 import org.firstinspires.ftc.teamcode.autonomous.StateMachine.StateMachine;
 
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ public class StateMachineExample extends OpMode {
     TakeOutTrashState takeOutTrash = new TakeOutTrashState(gamepad1,telemetry);
     DoDishesState doDishes = new DoDishesState(gamepad1,telemetry);
     MopFloor mopFloor = new MopFloor(gamepad1,telemetry);
-    ArrayList<MyState> listOfStates = new ArrayList<MyState>();
+    ArrayList<State> listOfStates = new ArrayList<State>();
     StateMachine stateMachine;
 
     @Override
@@ -46,7 +46,7 @@ public class StateMachineExample extends OpMode {
     }
 }
 
-abstract class BaseState extends MyState {
+abstract class BaseState extends State {
     boolean done;
     Gamepad gamepad1;
     Telemetry telemetry;

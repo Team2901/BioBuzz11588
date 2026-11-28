@@ -35,21 +35,21 @@ public class StateMachine {
     // The index for the state in order which the system is currently in
     int orderIndex;
     // Will store states when StateMachineRun class passes them into the constructor
-    ArrayList<MyState> order;
+    ArrayList<State> order;
     // Non pedropathing constructor
-    public StateMachine(ArrayList<MyState> _order) {
+    public StateMachine(ArrayList<State> _order) {
         order = _order;
         cancel();
     }
     // Pedropathing constructor
-    public StateMachine(ArrayList<MyState> _order, Follower _follower) {
+    public StateMachine(ArrayList<State> _order, Follower _follower) {
         order = _order;
         follower = _follower;
         cancel();
     }
     // Returns the state that the orderIndex currently points to in order
     // In simple language which state the robot is currently "in"
-    public MyState getState() {
+    public State getState() {
         // Checks bounds to avoid indexOutOfBoundsError
         // Note this returns an object of MyState not the states name
         if(isInBounds(orderIndex)){
@@ -78,7 +78,7 @@ public class StateMachine {
             return;
         }
         // Declares a temporary holding State and initializes it as null
-        MyState nextState = null;
+        State nextState = null;
         // isEnded() returns a boolean which represents if the state has met the conditions to move
         // into the next state
         if(order.get(orderIndex).isEnded()){
@@ -104,7 +104,7 @@ public class StateMachine {
 
     }
 
-    static class Move extends MyState {
+    static class Move extends State {
         Hardware robot;
         int k;
         int x;
@@ -126,7 +126,7 @@ public class StateMachine {
         }
     }
 
-    static class PedroPathingMove extends MyState {
+    static class PedroPathingMove extends State {
         Follower follower;
         Pose targetPose;
         Double timeOutConstraint;

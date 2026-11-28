@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.autonomous.StateMachine;
 
-public class Idle extends MyState {
+public class Idle extends State {
     @Override
     public void enter() {
     }

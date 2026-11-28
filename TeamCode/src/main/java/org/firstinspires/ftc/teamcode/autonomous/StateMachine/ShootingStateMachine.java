@@ -11,10 +11,10 @@ import java.util.ArrayList;
 @Configurable
 public class ShootingStateMachine {
 
-    ArrayList<MyState> order;
+    ArrayList<State> order;
     Telemetry telemetry;
     int orderIndex;
-    public ShootingStateMachine(ArrayList<MyState> _order, Telemetry _telemetry) {
+    public ShootingStateMachine(ArrayList<State> _order, Telemetry _telemetry) {
         telemetry = _telemetry;
         order = _order;
         cancel();
@@ -22,7 +22,7 @@ public class ShootingStateMachine {
     public boolean isRunning(){
         return isInBounds(orderIndex);
     }
-    public MyState getState() {
+    public State getState() {
         if(isInBounds(orderIndex)){
             return order.get(orderIndex);
         }
@@ -45,7 +45,7 @@ public class ShootingStateMachine {
         if(orderIndex < 0){
             return;
         }
-        MyState nextState = null;
+        State nextState = null;
         if(order.get(orderIndex).isEnded()){
             order.get(orderIndex).leaving();
             if(isInBounds(orderIndex+1)){
@@ -63,7 +63,7 @@ public class ShootingStateMachine {
         }
 
     }
-    public static class SpinUp extends MyState {
+    public static class SpinUp extends State {
         Hardware robot;
         public SpinUp(Hardware robot){
             this.robot = robot;
@@ -78,7 +78,7 @@ public class ShootingStateMachine {
             return (Math.abs(robot.launcher.getVelocity()- Hardware.defaultVelocity)<=10);
         }
     }
-    public static class MoveTransfer extends MyState{
+    public static class MoveTransfer extends State {
         public int TRANSFER_POS_1 = 0;
         public int TRANSFER_POS_2 = 1700;
         Hardware robot;
