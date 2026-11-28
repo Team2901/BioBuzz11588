@@ -26,7 +26,7 @@ public class Hardware {
     public DcMotorEx backLeft; // EH - 1
     public DcMotorEx frontRight; // CH - 0
     public DcMotorEx backRight; // CH - 1
-    public ExampleTurret turret;
+    public Turret turret;
     public DcMotorEx launcher; // CH - 2
     public DcMotorEx intake; // EH - 2
     public DcMotorEx transfer; // EH - 3
@@ -85,7 +85,7 @@ public class Hardware {
 
     public void init(HardwareMap hardwareMap, Telemetry _telemetry) {
         telemetry = _telemetry;
-        turret = new ExampleTurret(hardwareMap, _telemetry);
+        turret = new Turret(hardwareMap, _telemetry);
         //initializes necessary motors
         try {
             limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
@@ -291,8 +291,6 @@ public class Hardware {
     }
 
     public void update() {
-        Pose2D currentPose = pinpoint.getPosition();
-        turret.update(currentPose);
         pinpoint.update();
     }
     /**

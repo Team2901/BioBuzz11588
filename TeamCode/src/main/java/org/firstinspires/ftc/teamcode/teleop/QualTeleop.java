@@ -67,7 +67,9 @@ public class QualTeleop extends OpMode {
     }
     @Override
     public void loop() {
+        robot.update();
         Pose2D currentPose = robot.pinpoint.getPosition();
+        robot.turret.update(currentPose);
 
         double leftJoyY = -gamepad1.left_stick_y;
         double leftJoyX = gamepad1.left_stick_x;

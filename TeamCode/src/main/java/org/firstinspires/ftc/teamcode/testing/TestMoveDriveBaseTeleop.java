@@ -6,18 +6,18 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import org.firstinspires.ftc.teamcode.hardware.ExampleTurret;
+import org.firstinspires.ftc.teamcode.hardware.Turret;
 import org.firstinspires.ftc.teamcode.hardware.Hardware;
 
 @TeleOp(group = "test")
 public class TestMoveDriveBaseTeleop extends OpMode {
     public Hardware robot = new Hardware();
-    public ExampleTurret turret;
+    public Turret turret;
 
     @Override
     public void init() {
         robot.init(hardwareMap, telemetry);
-        turret = new ExampleTurret(hardwareMap, telemetry);
+        turret = new Turret(hardwareMap, telemetry);
     }
 
     @Override
